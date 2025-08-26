@@ -1,7 +1,7 @@
 <?php
 /**
  * Front Controller for Quote Requests
- * Handles AJAX submissions of quote request forms
+ * Handles AJAX form submissions and quote processing
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -10,161 +10,147 @@ if (!defined('_PS_VERSION_')) {
 
 class RequestQuoteQuoteModuleFrontController extends ModuleFrontController
 {
+    public $ssl = true;
+    public $display_column_left = false;
+    public $display_column_right = false;
+
     /**
      * Initialize controller
      */
-    public function initContent()
+    public function init()
     {
-        parent::initContent();
-        
-        // Only allow AJAX requests
-        if (!$this->isAjax()) {
-            $this->ajax = false;
-            $this->errors[] = $this->module->l('Invalid request method.');
-            return;
-        }
-
-        // Check if module is enabled
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            $this->ajax = false;
-            $this->errors[] = $this->module->l('Quote requests are currently disabled.');
-            return;
-        }
-
-        // Handle the request
-        $this->processQuoteRequest();
+        parent::init();
     }
 
     /**
-     * Process the quote request submission
+     * Process AJAX quote request
      */
-    private function processQuoteRequest()
+    public function displayAjax()
     {
+        $response = ['success' => false, 'message' => ''];
+
         try {
-            // Validate CSRF token
-            $csrfToken = Tools::getValue('csrf_token');
-            if (!$this->module->validateCSRFToken($csrfToken)) {
-                throw new Exception($this->module->l('Invalid security token. Please refresh the page and try again.'));
+            // Check if module is enabled
+            if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+                throw new Exception($this->module->l('Quote requests are currently disabled.', 'quote'));
             }
 
-            // Validate and sanitize input data
-            $data = $this->validateAndSanitizeInput();
+            // Validate CSRF token
+            if (!Tools::getToken(false) || Tools::getValue('csrf_token') !== Tools::getToken(false)) {
+                throw new Exception($this->module->l('Invalid security token.', 'quote'));
+            }
 
-            // Save the quote request
-            $quoteId = $this->saveQuoteRequest($data);
+            // Get form data
+            $productId = (int)Tools::getValue('product_id');
+            $clientName = Tools::getValue('client_name');
+            $email = Tools::getValue('email');
+            $phone = Tools::getValue('phone');
+            $note = Tools::getValue('note');
 
-            // Return success response
-            $this->ajax = true;
-            $this->jsonResponse([
-                'success' => true,
-                'message' => $this->module->l('Your quote request has been submitted successfully. We will contact you soon.'),
-                'quote_id' => $quoteId
-            ]);
+            // Validate required fields
+            if (!$productId || !$clientName || !$email) {
+                throw new Exception($this->module->l('Please fill in all required fields.', 'quote'));
+            }
+
+            // Validate email
+            if (!Validate::isEmail($email)) {
+                throw new Exception($this->module->l('Please enter a valid email address.', 'quote'));
+            }
+
+            // Validate phone if required
+            if (Configuration::get('REQUESTQUOTE_REQUIRE_PHONE') && empty($phone)) {
+                throw new Exception($this->module->l('Phone number is required.', 'quote'));
+            }
+
+            // Check if product exists
+            $product = new Product($productId, false, $this->context->language->id);
+            if (!Validate::isLoadedObject($product)) {
+                throw new Exception($this->module->l('Product not found.', 'quote'));
+            }
+
+            // Create quote request
+            $quote = new RequestQuoteQuote();
+            $quote->id_product = $productId;
+            $quote->id_shop = $this->context->shop->id;
+            $quote->client_name = pSQL($clientName);
+            $quote->email = pSQL($email);
+            $quote->phone = $phone ? pSQL($phone) : null;
+            $quote->note = $note ? pSQL($note) : null;
+
+            if ($quote->add()) {
+                // Send email notification (optional)
+                $this->sendEmailNotification($quote, $product);
+                
+                $response['success'] = true;
+                $response['message'] = $this->module->l('Your quote request has been submitted successfully! We will contact you soon.', 'quote');
+            } else {
+                throw new Exception($this->module->l('Failed to save quote request. Please try again.', 'quote'));
+            }
 
         } catch (Exception $e) {
-            $this->ajax = false;
-            $this->errors[] = $e->getMessage();
-            $this->jsonResponse([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Validate and sanitize input data
-     */
-    private function validateAndSanitizeInput()
-    {
-        $data = [];
-
-        // Client Name (required)
-        $clientName = Tools::getValue('client_name');
-        if (empty($clientName) || strlen(trim($clientName)) < 2) {
-            throw new Exception($this->module->l('Please provide a valid client name (minimum 2 characters).'));
-        }
-        $data['client_name'] = Tools::safeOutput(trim($clientName));
-
-        // Email (required, valid email)
-        $email = Tools::getValue('email');
-        if (empty($email) || !Validate::isEmail($email)) {
-            throw new Exception($this->module->l('Please provide a valid email address.'));
-        }
-        $data['email'] = Tools::safeOutput(trim($email));
-
-        // Phone (optional, but validate if provided)
-        $phone = Tools::getValue('phone');
-        if (!empty($phone)) {
-            if (strlen(trim($phone)) < 10) {
-                throw new Exception($this->module->l('Phone number must be at least 10 characters long.'));
-            }
-            $data['phone'] = Tools::safeOutput(trim($phone));
-        } else {
-            $data['phone'] = null;
+            $response['message'] = $e->getMessage();
         }
 
-        // Product ID (required, must be valid product)
-        $productId = (int)Tools::getValue('product_id');
-        if (!$productId || !Product::existsInDatabase($productId, 'product')) {
-            throw new Exception($this->module->l('Invalid product selected.'));
-        }
-        $data['product_id'] = $productId;
-
-        // Note (optional)
-        $note = Tools::getValue('note');
-        if (!empty($note)) {
-            if (strlen(trim($note)) > 1000) {
-                throw new Exception($this->module->l('Note cannot exceed 1000 characters.'));
-            }
-            $data['note'] = Tools::safeOutput(trim($note));
-        } else {
-            $data['note'] = null;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Save the quote request to database
-     */
-    private function saveQuoteRequest($data)
-    {
-        $sql = 'INSERT INTO `' . _DB_PREFIX_ . 'requestquote_quotes` 
-                (`id_product`, `id_shop`, `client_name`, `email`, `phone`, `note`, `date_add`, `date_upd`) 
-                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())';
-
-        $params = [
-            $data['product_id'],
-            (int)$this->context->shop->id,
-            $data['client_name'],
-            $data['email'],
-            $data['phone'],
-            $data['note']
-        ];
-
-        if (!Db::getInstance()->execute($sql, $params)) {
-            throw new Exception($this->module->l('Failed to save quote request. Please try again.'));
-        }
-
-        return Db::getInstance()->Insert_ID();
-    }
-
-    /**
-     * Check if request is AJAX
-     */
-    private function isAjax()
-    {
-        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-    }
-
-    /**
-     * Send JSON response
-     */
-    private function jsonResponse($data)
-    {
         header('Content-Type: application/json');
-        echo json_encode($data);
+        echo json_encode($response);
         exit;
+    }
+
+    /**
+     * Send email notification for new quote request
+     */
+    private function sendEmailNotification($quote, $product)
+    {
+        try {
+            $adminEmail = Configuration::get('PS_SHOP_EMAIL');
+            
+            if (!$adminEmail) {
+                return false;
+            }
+
+            $templateVars = [
+                '{client_name}' => $quote->client_name,
+                '{email}' => $quote->email,
+                '{phone}' => $quote->phone ?: 'N/A',
+                '{product_name}' => $product->name,
+                '{product_id}' => $quote->id_product,
+                '{note}' => $quote->note ?: 'No additional notes',
+                '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
+                '{date}' => date('Y-m-d H:i:s'),
+            ];
+
+            $subject = sprintf('[%s] New Quote Request for %s', 
+                Configuration::get('PS_SHOP_NAME'), 
+                $product->name
+            );
+
+            $message = "New quote request received:\n\n";
+            $message .= "Client: {client_name}\n";
+            $message .= "Email: {email}\n";
+            $message .= "Phone: {phone}\n";
+            $message .= "Product: {product_name} (ID: {product_id})\n";
+            $message .= "Note: {note}\n";
+            $message .= "Date: {date}\n";
+
+            foreach ($templateVars as $key => $value) {
+                $message = str_replace($key, $value, $message);
+            }
+
+            return Mail::Send(
+                $this->context->language->id,
+                'contact',
+                $subject,
+                ['message' => $message],
+                $adminEmail,
+                null,
+                $quote->email,
+                $quote->client_name
+            );
+
+        } catch (Exception $e) {
+            // Log error but don't fail the quote submission
+            PrestaShopLogger::addLog('RequestQuote email error: ' . $e->getMessage(), 3);
+            return false;
+        }
     }
 } 

@@ -240,69 +240,17 @@ class RequestQuote extends Module
 
         $product = $params['product'];
         
-        // Génération d'un ID unique pour le modal
-        $modalId = 'requestQuoteModal_' . $product->id;
+        // Assign template variables
+        $this->context->smarty->assign([
+            'product' => $product,
+            'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
+            'csrf_token' => Tools::getToken(false),
+            'module_dir' => $this->_path,
+            'module_name' => $this->name,
+        ]);
 
-        return '<div class="request-quote-section">
-                    <button type="button" class="btn btn-primary btn-lg request-quote-btn" data-toggle="modal" data-target="#' . $modalId . '">
-                        <i class="icon-quote-left"></i> Request Quote
-                    </button>
-                    
-                    <!-- Modal Quote Request -->
-                    <div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog">
-                        <div class="modal-dialog modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Request Quote for ' . htmlspecialchars($product->name) . '</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form class="request-quote-form">
-                                        <input type="hidden" name="product_id" value="' . $product->id . '">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Full Name *</label>
-                                                    <input type="text" class="form-control" name="client_name" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Email *</label>
-                                                    <input type="email" class="form-control" name="email" required>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Phone Number</label>
-                                                    <input type="tel" class="form-control" name="phone">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Product</label>
-                                                    <input type="text" class="form-control" value="' . htmlspecialchars($product->name) . '" readonly>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Additional Notes</label>
-                                            <textarea class="form-control" name="note" rows="3" placeholder="Any specific requirements or questions..."></textarea>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-primary submit-quote-btn">Submit Quote Request</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>';
+        // Return the template
+        return $this->display(__FILE__, 'views/templates/hook/product-actions.tpl');
     }
 
 
@@ -318,86 +266,42 @@ class RequestQuote extends Module
             return '';
         }
 
-        // CSS global pour masquer les prix sur toutes les pages
+        // Add CSS and JS files
+        $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
+        $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+
+        // CSS global pour masquer les prix sur toutes les pages - More selective to preserve images
         $globalCss = '<style>
-            /* Masquage global des prix et boutons d\'ajout au panier */
+            /* Hide pricing and add-to-cart elements while preserving images */
             .product-add-to-cart,
             .product-variants,
             .product-customization,
             .product-quantity,
-            .product-actions,
-            .product-availability,
-            .product-features,
-            .product-cover,
-            .product-flags,
             .product-price,
             .current-price,
             .regular-price,
             .discount-percentage,
             .product-discounts,
-            .product-pack,
-            .product-customization-container,
-            .product-variants-items,
-            .product-variants-selector,
-            .product-variants-item,
-            .product-variants-item input[type="radio"],
-            .product-variants-item input[type="checkbox"],
-            .product-variants-item select,
-            .product-variants-item .form-control,
-            .product-variants-item .form-select,
-            .product-variants-item .form-check,
-            .product-variants-item .form-check-input,
-            .product-variants-item .form-check-label,
-            .product-variants-item .form-group,
-            .product-variants-item .input-group,
-            .product-variants-item .btn,
-            .product-variants-item .dropdown,
-            .product-variants-item .dropdown-toggle,
-            .product-variants-item .dropdown-menu,
-            .product-variants-item .dropdown-item,
-            .product-variants-item .list-group,
-            .product-variants-item .list-group-item,
-            .product-variants-item .card,
-            .product-variants-item .card-body,
-            .product-variants-item .card-header,
-            .product-variants-item .card-footer,
-            .product-variants-item .table,
-            .product-variants-item .table-responsive,
-            .product-variants-item .alert,
-            .product-variants-item .badge,
-            .product-variants-item .progress,
-            .product-variants-item .spinner-border,
-            .product-variants-item .spinner-grow,
-            .product-variants-item .toast,
-            .product-variants-item .modal,
-            .product-variants-item .popover,
-            .product-variants-item .tooltip,
-            .product-variants-item .carousel,
-            .product-variants-item .accordion,
-            .product-variants-item .collapse,
-            .product-variants-item .tab-content,
-            .product-variants-item .tab-pane,
-            .product-variants-item .nav,
-            .product-variants-item .nav-item,
-            .product-variants-item .nav-link,
-            .product-variants-item .breadcrumb,
-            .product-variants-item .pagination,
-            .product-variants-item .page-item,
-            .product-variants-item .page-link,
-            .product-variants-item .list-unstyled,
-            .product-variants-item .list-inline,
-            .product-variants-item .list-inline-item,
-            .product-variants-item .d-flex,
-            .product-variants-item .d-inline-flex,
-            .product-variants-item .d-block,
-            .product-variants-item .d-inline-block,
-            .product-variants-item .d-none,
-            .product-variants-item .d-sm-none,
-            .product-variants-item .d-md-none,
-            .product-variants-item .d-lg-none,
-            .product-variants-item .d-xl-none,
-            .product-variants-item .d-xxl-none {
+            .product-pack {
                 display: none !important;
+            }
+            
+            /* Ensure product images and essential elements remain visible */
+            .product-cover,
+            .product-images,
+            .product-cover-modal,
+            .product-thumbs,
+            .product-thumb,
+            .product-cover-thumbnails,
+            .js-qv-product-cover,
+            .product-information .product-title,
+            .product-information .product-description,
+            .product-information .product-description-short,
+            .product-information .product-details,
+            .product-information .product-miniature,
+            .product-miniature .product-thumbnail,
+            .quickview .product-cover {
+                display: block !important;
             }
         </style>';
 
@@ -476,30 +380,7 @@ class RequestQuote extends Module
 
                 // JavaScript inline pour la gestion du formulaire
                 $js = '<script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        // Gestion de la soumission du formulaire
-                        document.querySelectorAll(".submit-quote-btn").forEach(function(btn) {
-                            btn.addEventListener("click", function() {
-                                var modal = this.closest(".modal");
-                                var form = modal.querySelector(".request-quote-form");
-                                
-                                if (form.checkValidity()) {
-                                    // Simulation de soumission (à remplacer par AJAX plus tard)
-                                    this.innerHTML = "<i class=\"icon-spinner icon-spin\"></i> Submitting...";
-                                    this.disabled = true;
-                                    
-                                    setTimeout(function() {
-                                        alert("Quote request submitted successfully! We will contact you soon.");
-                                        modal.querySelector(".close").click();
-                                        btn.innerHTML = "Submit Quote Request";
-                                        btn.disabled = false;
-                                    }, 2000);
-                                } else {
-                                    form.reportValidity();
-                                }
-                            });
-                        });
-                    });
+                    // Additional JavaScript for RequestQuote module can be added here
                 </script>';
 
                 return $globalCss . $css . $js;
@@ -868,166 +749,37 @@ class RequestQuote extends Module
             return '';
         }
 
-        // CSS pour masquer les éléments de prix et d'ajout au panier
+        // Check if product is available in params
+        if (isset($params['product']) && is_object($params['product'])) {
+            $product = $params['product'];
+            
+            // Assign template variables
+            $this->context->smarty->assign([
+                'product' => $product,
+                'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
+                'csrf_token' => Tools::getToken(false),
+                'module_dir' => $this->_path,
+                'module_name' => $this->name,
+            ]);
+
+            // Return the template
+            return $this->display(__FILE__, 'views/templates/hook/product-additional-info.tpl');
+        }
+
+        // If no product available, just return the CSS to hide elements
         return '<style>
-            /* Masquage des éléments de prix et d\'ajout au panier */
+            /* Hide pricing and add-to-cart elements */
             .product-add-to-cart,
             .product-variants,
             .product-customization,
             .product-prices,
             .product-quantity,
             .product-actions,
-            .product-availability,
-            .product-information,
-            .product-features,
-            .product-cover,
-            .product-flags,
             .product-price,
             .current-price,
             .regular-price,
             .discount-percentage,
-            .product-discounts,
-            .product-pack,
-            .product-customization-container,
-            .product-variants-items,
-            .product-variants-selector,
-            .product-variants-item,
-            .product-variants-item input[type="radio"],
-            .product-variants-item input[type="checkbox"],
-            .product-variants-item select,
-            .product-variants-item .form-control,
-            .product-variants-item .form-select,
-            .product-variants-item .form-check,
-            .product-variants-item .form-check-input,
-            .product-variants-item .form-check-label,
-            .product-variants-item .form-group,
-            .product-variants-item .input-group,
-            .product-variants-item .btn,
-            .product-variants-item .dropdown,
-            .product-variants-item .dropdown-toggle,
-            .product-variants-item .dropdown-menu,
-            .product-variants-item .dropdown-item,
-            .product-variants-item .list-group,
-            .product-variants-item .list-group-item,
-            .product-variants-item .card,
-            .product-variants-item .card-body,
-            .product-variants-item .card-header,
-            .product-variants-item .card-footer,
-            .product-variants-item .table,
-            .product-variants-item .table-responsive,
-            .product-variants-item .alert,
-            .product-variants-item .badge,
-            .product-variants-item .progress,
-            .product-variants-item .spinner-border,
-            .product-variants-item .spinner-grow,
-            .product-variants-item .toast,
-            .product-variants-item .modal,
-            .product-variants-item .popover,
-            .product-variants-item .tooltip,
-            .product-variants-item .carousel,
-            .product-variants-item .accordion,
-            .product-variants-item .collapse,
-            .product-variants-item .tab-content,
-            .product-variants-item .tab-pane,
-            .product-variants-item .nav,
-            .product-variants-item .nav-item,
-            .product-variants-item .nav-link,
-            .product-variants-item .breadcrumb,
-            .product-variants-item .pagination,
-            .product-variants-item .page-item,
-            .product-variants-item .page-link,
-            .product-variants-item .list-unstyled,
-            .product-variants-item .list-inline,
-            .product-variants-item .list-inline-item,
-            .product-variants-item .d-flex,
-            .product-variants-item .d-inline-flex,
-            .product-variants-item .d-block,
-            .product-variants-item .d-inline-block,
-            .product-variants-item .d-none,
-            .product-variants-item .d-sm-none,
-            .product-variants-item .d-md-none,
-            .product-variants-item .d-lg-none,
-            .product-variants-item .d-xl-none,
-            .product-variants-item .d-xxl-none {
-                display: none !important;
-            }
-            
-            /* Masquage spécifique pour les thèmes Classic */
-            .product-information .product-variants,
-            .product-information .product-customization,
-            .product-information .product-pack,
-            .product-information .product-discounts,
-            .product-information .product-availability,
-            .product-information .product-features,
-            .product-information .product-cover,
-            .product-information .product-flags,
-            .product-information .product-price,
-            .product-information .current-price,
-            .product-information .regular-price,
-            .product-information .discount-percentage,
-            .product-information .product-discounts,
-            .product-information .product-pack,
-            .product-information .product-customization-container,
-            .product-information .product-variants-items,
-            .product-information .product-variants-selector,
-            .product-information .product-variants-item,
-            .product-information .product-variants-item input[type="radio"],
-            .product-information .product-variants-item input[type="checkbox"],
-            .product-information .product-variants-item select,
-            .product-information .product-variants-item .form-control,
-            .product-information .product-variants-item .form-select,
-            .product-information .product-variants-item .form-check,
-            .product-information .product-variants-item .form-check-input,
-            .product-information .product-variants-item .form-check-label,
-            .product-information .product-variants-item .form-group,
-            .product-information .product-variants-item .input-group,
-            .product-information .product-variants-item .btn,
-            .product-information .product-variants-item .dropdown,
-            .product-information .product-variants-item .dropdown-toggle,
-            .product-information .product-variants-item .dropdown-menu,
-            .product-information .product-variants-item .dropdown-item,
-            .product-information .product-variants-item .list-group,
-            .product-information .product-variants-item .list-group-item,
-            .product-information .product-variants-item .card,
-            .product-information .product-variants-item .card-body,
-            .product-information .product-variants-item .card-header,
-            .product-information .product-variants-item .card-footer,
-            .product-information .product-table,
-            .product-information .table-responsive,
-            .product-information .alert,
-            .product-information .badge,
-            .product-information .progress,
-            .product-information .spinner-border,
-            .product-information .spinner-grow,
-            .product-information .toast,
-            .product-information .modal,
-            .product-information .popover,
-            .product-information .tooltip,
-            .product-information .carousel,
-            .product-information .accordion,
-            .product-information .collapse,
-            .product-information .tab-content,
-            .product-information .tab-pane,
-            .product-information .nav,
-            .product-information .nav-item,
-            .product-information .nav-link,
-            .product-information .breadcrumb,
-            .product-information .pagination,
-            .product-information .page-item,
-            .product-information .page-link,
-            .product-information .list-unstyled,
-            .product-information .list-inline,
-            .product-information .list-inline-item,
-            .product-information .d-flex,
-            .product-information .d-inline-flex,
-            .product-information .d-block,
-            .product-information .d-inline-block,
-            .product-information .d-none,
-            .product-information .d-sm-none,
-            .product-information .d-md-none,
-            .product-information .d-lg-none,
-            .product-information .d-xl-none,
-            .product-information .d-xxl-none {
+            .product-discounts {
                 display: none !important;
             }
         </style>';

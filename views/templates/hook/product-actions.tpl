@@ -3,14 +3,29 @@
  * Replaces add-to-cart functionality with quote request button
  *}
 
-{* Hide the original add-to-cart section *}
+{* Hide only pricing and add-to-cart elements, preserve images *}
 <style>
     .product-add-to-cart,
     .product-variants,
     .product-customization,
     .product-prices,
-    .product-quantity {
+    .product-quantity,
+    .product-price,
+    .current-price,
+    .regular-price,
+    .discount-percentage,
+    .product-discounts {
         display: none !important;
+    }
+    
+    /* Ensure images remain visible */
+    .product-cover,
+    .product-images,
+    .product-cover-modal,
+    .product-thumbs,
+    .product-thumb,
+    .product-cover-thumbnails {
+        display: block !important;
     }
 </style>
 
@@ -158,4 +173,69 @@
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">{l s='Loading...' mod='requestquote'}</span>
     </div>
-</div> 
+</div>
+
+{* JavaScript for form handling *}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('requestQuoteForm');
+    const submitBtn = document.getElementById('submitQuoteBtn');
+    const messagesDiv = document.getElementById('requestQuoteMessages');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> {l s='Submitting...' mod='requestquote'}';
+            messagesDiv.style.display = 'none';
+            
+            // Prepare form data
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+            formData.append('action', 'submitQuote');
+            
+            // Submit via AJAX
+            fetch('{$link->getModuleLink('requestquote', 'quote')}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    messagesDiv.className = 'alert alert-success';
+                    messagesDiv.innerHTML = '<i class="fa fa-check"></i> ' + data.message;
+                    messagesDiv.style.display = 'block';
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Close modal after delay
+                    setTimeout(function() {
+                        $('#requestQuoteModal').modal('hide');
+                        messagesDiv.style.display = 'none';
+                    }, 3000);
+                } else {
+                    // Show error message
+                    messagesDiv.className = 'alert alert-danger';
+                    messagesDiv.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + data.message;
+                    messagesDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                messagesDiv.className = 'alert alert-danger';
+                messagesDiv.innerHTML = '<i class="fa fa-exclamation-triangle"></i> {l s='An error occurred. Please try again.' mod='requestquote'}';
+                messagesDiv.style.display = 'block';
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="icon-send"></i> {l s='Submit Quote Request' mod='requestquote'}';
+            });
+        });
+    }
+});
+</script> 

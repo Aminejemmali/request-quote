@@ -3,15 +3,30 @@
  * Alternative hook template for product page modifications
  *}
 
-{* Hide the original add-to-cart section *}
+{* Hide only pricing and add-to-cart elements, preserve images *}
 <style>
     .product-add-to-cart,
     .product-variants,
     .product-customization,
     .product-prices,
     .product-quantity,
-    .product-actions {
+    .product-actions,
+    .product-price,
+    .current-price,
+    .regular-price,
+    .discount-percentage,
+    .product-discounts {
         display: none !important;
+    }
+    
+    /* Ensure images remain visible */
+    .product-cover,
+    .product-images,
+    .product-cover-modal,
+    .product-thumbs,
+    .product-thumb,
+    .product-cover-thumbnails {
+        display: block !important;
     }
 </style>
 
