@@ -6,10 +6,15 @@
  * It hides the price and add-to-cart functionality and replaces it with a quote request form.
  * 
  * @author Amine Jameli
- * @version 2.0.0
+ * @version 2.0.1
  * @license MIT
  * @since 1.0.0
  * @updated 2024-12-19
+ * 
+ * Version 2.0.1 Changes:
+ * - Fixed missing hook methods causing reset issues
+ * - Cleaned up duplicate hook implementations
+ * - Simplified CSS rules for better performance
  * 
  * Version 2.0.0 Changes:
  * - Fixed critical issues with request button only showing in quick preview
@@ -36,7 +41,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.0.0';
+        $this->version = '2.0.1';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -91,8 +96,6 @@ class RequestQuote extends Module
             'displayProductListFunctionalButtons', // Hook for product list buttons
             'displayRightColumnProduct',       // Right column on product page
             'displayLeftColumnProduct',        // Left column on product page
-            'displayProductTab',               // Product tab
-            'displayProductTabContent',        // Product tab content
             'actionFrontControllerSetMedia',   // Add CSS/JS files
         ];
 
@@ -459,6 +462,75 @@ class RequestQuote extends Module
     }
 
     /**
+     * Hook: displayAfterProductThumbs - Additional product info after thumbnails
+     */
+    public function hookDisplayAfterProductThumbs($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        // Return only CSS to hide elements, no additional content here
+        return '<style>
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
+     * Hook: displayProductButtons - Hide/modify product buttons
+     */
+    public function hookDisplayProductButtons($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        // Return CSS to hide pricing elements
+        return '<style>
+            .product-add-to-cart,
+            .product-variants,
+            .product-customization,
+            .product-quantity,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
+     * Hook: displayProductListFunctionalButtons - Hide buttons on product lists
+     */
+    public function hookDisplayProductListFunctionalButtons($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        // Return CSS to hide add-to-cart buttons on product lists
+        return '<style>
+            .product-add-to-cart,
+            .add-to-cart,
+            .btn-add-to-cart,
+            .product-price,
+            .price,
+            .current-price,
+            .regular-price {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
      * Hook: displayProductPriceBlock - Hide price blocks
      */
     public function hookDisplayProductPriceBlock($params)
@@ -473,68 +545,7 @@ class RequestQuote extends Module
             .regular-price,
             .discount-percentage,
             .product-discounts,
-            .product-pack,
-            .product-customization-container,
-            .product-variants-items,
-            .product-variants-selector,
-            .product-variants-item,
-            .product-variants-item input[type="radio"],
-            .product-variants-item input[type="checkbox"],
-            .product-variants-item select,
-            .product-variants-item .form-control,
-            .product-variants-item .form-select,
-            .product-variants-item .form-check,
-            .product-variants-item .form-check-input,
-            .product-variants-item .form-check-label,
-            .product-variants-item .form-group,
-            .product-variants-item .input-group,
-            .product-variants-item .btn,
-            .product-variants-item .dropdown,
-            .product-variants-item .dropdown-toggle,
-            .product-variants-item .dropdown-menu,
-            .product-variants-item .dropdown-item,
-            .product-variants-item .list-group,
-            .product-variants-item .list-group-item,
-            .product-variants-item .card,
-            .product-variants-item .card-body,
-            .product-variants-item .card-header,
-            .product-variants-item .card-footer,
-            .product-variants-item .table,
-            .product-variants-item .table-responsive,
-            .product-variants-item .alert,
-            .product-variants-item .badge,
-            .product-variants-item .progress,
-            .product-variants-item .spinner-border,
-            .product-variants-item .spinner-grow,
-            .product-variants-item .toast,
-            .product-variants-item .modal,
-            .product-variants-item .popover,
-            .product-variants-item .tooltip,
-            .product-variants-item .carousel,
-            .product-variants-item .accordion,
-            .product-variants-item .collapse,
-            .product-variants-item .tab-content,
-            .product-variants-item .tab-pane,
-            .product-variants-item .nav,
-            .product-variants-item .nav-item,
-            .product-variants-item .nav-link,
-            .product-variants-item .breadcrumb,
-            .product-variants-item .pagination,
-            .product-variants-item .page-item,
-            .product-variants-item .page-link,
-            .product-variants-item .list-unstyled,
-            .product-variants-item .list-inline,
-            .product-variants-item .list-inline-item,
-            .product-variants-item .d-flex,
-            .product-variants-item .d-inline-flex,
-            .product-variants-item .d-block,
-            .product-variants-item .d-inline-block,
-            .product-variants-item .d-none,
-            .product-variants-item .d-sm-none,
-            .product-variants-item .d-md-none,
-            .product-variants-item .d-lg-none,
-            .product-variants-item .d-xl-none,
-            .product-variants-item .d-xxl-none {
+            .product-pack {
                 display: none !important;
             }
         </style>';

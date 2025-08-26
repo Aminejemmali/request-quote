@@ -149,6 +149,7 @@ requestquote/
 ├── index.php ✓
 ├── README.md ✓
 ├── install.md ✓
+├── CHANGELOG.md ✓
 ├── classes/
 │   ├── RequestQuoteQuote.php ✓
 │   └── index.php ✓

@@ -100,7 +100,11 @@ requestquote/
 │       └── requestquote.js        # Module JavaScript
 ├── config.xml                     # Module configuration
 ├── requestquote.php              # Main module file
-└── README.md                     # This file
+├── README.md                     # This file
+├── CHANGELOG.md                  # Version history and changes
+├── install.md                    # Installation and testing guide
+├── verify.php                    # Module verification script
+└── VERSION_MANAGEMENT.md         # Version management guide
 ```
 
 ## 🔧 Customization

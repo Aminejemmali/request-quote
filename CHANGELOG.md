@@ -4,6 +4,23 @@ All notable changes to the RequestQuote module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2024-12-19
+
+### ✅ Fixed
+- **Critical**: Fixed missing hook methods causing "Reset is impossible" error
+- **Critical**: Fixed `hookDisplayProductTab` and `hookDisplayProductTabContent` method missing errors
+- **Major**: Cleaned up duplicate hook implementations
+- **Minor**: Simplified CSS rules for better performance and compatibility
+
+### 🔧 Improved
+- **Code**: Removed unnecessary complex CSS selectors
+- **Performance**: Optimized hook method implementations
+- **Maintenance**: Better code organization and reduced duplication
+
+### 🔒 Security
+- Maintained all existing security features
+- No security regressions
+
 ## [2.0.0] - 2024-12-19
 
 ### 🚀 Major Updates
