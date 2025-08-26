@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.3';
+        $this->version = '2.1.4';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -129,24 +129,25 @@ class RequestQuote extends Module
         // Set configuration
         Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
 
-        // Create admin tab
-        $this->installTab();
-
         return true;
     }
 
-    public function uninstall()
+        public function uninstall()
     {
         // Remove table
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`');
-
+        
         // Remove configuration
         Configuration::deleteByName('REQUESTQUOTE_ENABLED');
 
-        // Remove admin tab
-        $this->uninstallTab();
+        // Clean up any existing admin tabs
+        $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            $tab->delete();
+        }
 
-            return parent::uninstall();
+        return parent::uninstall();
     }
 
     /**
@@ -457,19 +458,30 @@ class RequestQuote extends Module
     }
 
     /**
-     * Get module configuration form
+     * Get module configuration form and display quotes
      */
     public function getContent()
     {
         $output = '';
 
+        // Handle quote deletion
+        if (Tools::isSubmit('delete_quote')) {
+            $id_quote = (int)Tools::getValue('id_quote');
+            if (Db::getInstance()->delete('requestquote_quotes', 'id_quote = ' . $id_quote)) {
+                $output .= $this->displayConfirmation($this->l('Quote deleted successfully.'));
+            } else {
+                $output .= $this->displayError($this->l('Error deleting quote.'));
+            }
+        }
+
+        // Handle settings update
         if (Tools::isSubmit('submit' . $this->name)) {
             $enabled = (int)Tools::getValue('REQUESTQUOTE_ENABLED');
             Configuration::updateValue('REQUESTQUOTE_ENABLED', $enabled);
             $output .= $this->displayConfirmation($this->l('Settings updated successfully.'));
         }
 
-        return $output . $this->displayForm();
+        return $output . $this->displayForm() . $this->displayQuotes();
     }
 
     /**
@@ -525,56 +537,77 @@ class RequestQuote extends Module
         return $helper->generateForm([$form]);
     }
 
-        /**
-     * Install admin tab
-     */
-    private function installTab()
-    {
-        // Check if tab already exists
-        $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
-        if ($tabId) {
-            return true; // Tab already exists
-        }
-
-        $tab = new Tab();
-        $tab->active = 1;
-        $tab->class_name = 'AdminRequestQuote';
-        $tab->name = array();
-        
-        foreach (Language::getLanguages(true) as $lang) {
-            $tab->name[$lang['id_lang']] = 'Quote Requests';
-        }
-        
-        // Try different parent locations
-        $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
-        if (!$parentId) {
-            $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
-        }
-        if (!$parentId) {
-            $parentId = 0; // Root level if no parent found
-        }
-        
-        $tab->id_parent = $parentId;
-        $tab->module = $this->name;
-        
-        try {
-            return $tab->add();
-        } catch (Exception $e) {
-            // Silently fail for now, admin can still access quotes via database
-            return true;
-        }
-    }
-
     /**
-     * Uninstall admin tab
+     * Display quotes in module configuration
      */
-    private function uninstallTab()
+    public function displayQuotes()
     {
-            $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
-            if ($id_tab) {
-                $tab = new Tab($id_tab);
-                return $tab->delete();
+        // Get all quotes from database
+        $sql = 'SELECT q.*, p.name as product_name 
+                FROM `' . _DB_PREFIX_ . 'requestquote_quotes` q
+                LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` p ON (q.id_product = p.id_product AND p.id_lang = ' . (int)$this->context->language->id . ')
+                ORDER BY q.date_add DESC';
+        
+        $quotes = Db::getInstance()->executeS($sql);
+
+        $html = '<div class="panel" style="margin-top: 20px;">
+                    <div class="panel-heading">
+                        <i class="icon-list"></i>
+                        ' . $this->l('Quote Requests') . ' (' . (count($quotes) ?: 0) . ' ' . $this->l('total') . ')
+                    </div>
+                    <div class="panel-body">';
+
+        if ($quotes && count($quotes) > 0) {
+            $html .= '<div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>' . $this->l('ID') . '</th>
+                                    <th>' . $this->l('Client') . '</th>
+                                    <th>' . $this->l('Email') . '</th>
+                                    <th>' . $this->l('Phone') . '</th>
+                                    <th>' . $this->l('Product') . '</th>
+                                    <th>' . $this->l('Message') . '</th>
+                                    <th>' . $this->l('Date') . '</th>
+                                    <th>' . $this->l('Actions') . '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+
+            foreach ($quotes as $quote) {
+                $productName = $quote['product_name'] ?: 'Product #' . $quote['id_product'];
+                $message = $quote['message'] ? (strlen($quote['message']) > 50 ? substr($quote['message'], 0, 47) . '...' : $quote['message']) : '-';
+                
+                $html .= '<tr>
+                            <td>#' . (int)$quote['id_quote'] . '</td>
+                            <td>' . htmlspecialchars($quote['client_name']) . '</td>
+                            <td><a href="mailto:' . htmlspecialchars($quote['email']) . '">' . htmlspecialchars($quote['email']) . '</a></td>
+                            <td>' . ($quote['phone'] ? htmlspecialchars($quote['phone']) : '-') . '</td>
+                            <td>' . htmlspecialchars($productName) . '</td>
+                            <td title="' . htmlspecialchars($quote['message']) . '">' . htmlspecialchars($message) . '</td>
+                            <td>' . date('Y-m-d H:i', strtotime($quote['date_add'])) . '</td>
+                            <td>
+                                <a href="' . $_SERVER['REQUEST_URI'] . '&delete_quote=1&id_quote=' . (int)$quote['id_quote'] . '" 
+                                   class="btn btn-danger btn-xs" 
+                                   onclick="return confirm(\'' . $this->l('Are you sure you want to delete this quote?') . '\');">
+                                    <i class="icon-trash"></i> ' . $this->l('Delete') . '
+                                </a>
+                            </td>
+                          </tr>';
             }
-            return true;
+
+            $html .= '</tbody></table></div>';
+        } else {
+            $html .= '<div class="alert alert-info">
+                        <i class="icon-info-circle"></i>
+                        ' . $this->l('No quote requests found yet.') . '
+                      </div>';
+        }
+
+        $html .= '</div></div>';
+
+        return $html;
     }
+
+        
 } 
