@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.2';
+        $this->version = '2.1.3';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -184,12 +184,45 @@ class RequestQuote extends Module
             visibility: hidden !important;
                  }
          
-                  /* Disable quick preview entirely */
+                  /* Remove ALL quick preview traces and elements */
          .quick-view, .quickview, .js-quick-view-btn, 
          .product-quickview, .quick-view-btn,
-         .modal-quickview, .product-modal {
+         .modal-quickview, .product-modal,
+         .product-miniature .quick-view,
+         .thumbnail-container .quick-view,
+         .product-thumbnail .quick-view,
+         .js-product-miniature .quick-view,
+         .featured-products .quick-view,
+         .product-list .quick-view,
+         .products .quick-view,
+         .category-products .quick-view,
+         .search-results .quick-view,
+         .new-products .quick-view,
+         .highlighted-informations .quick-view,
+         .product-actions .quick-view,
+         .product-functional-buttons .quick-view,
+         a[data-link-action="quickview"],
+         button[data-link-action="quickview"],
+         .btn[data-link-action="quickview"],
+         [data-toggle="modal"][href*="quickview"],
+         [data-target*="quickview"],
+         .modal[id*="quickview"],
+         .modal-dialog[id*="quickview"],
+         .product-cover-modal,
+         .js-product-cover-modal,
+         .product-images-modal {
              display: none !important;
              visibility: hidden !important;
+             opacity: 0 !important;
+             pointer-events: none !important;
+         }
+         
+         /* Remove quick view icons and buttons completely */
+         .material-icons:contains("zoom_in"),
+         .fa-search-plus,
+         .icon-zoom-in,
+         .icon-eye {
+             display: none !important;
          }
          
          /* Quote button styling */
@@ -334,8 +367,31 @@ class RequestQuote extends Module
                  };
                  xhr.send(formData);
              };
-        });
-        </script>';
+                 });
+         
+         // Completely disable quick view functionality
+         document.addEventListener("click", function(e) {
+             // Block all quick view related clicks
+             if (e.target.matches(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"]") ||
+                 e.target.closest(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"]")) {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 return false;
+             }
+         }, true);
+         
+         // Remove quick view elements after page load
+         setTimeout(function() {
+             var quickViewElements = document.querySelectorAll(
+                 ".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"], " +
+                 ".product-quickview, .quick-view-btn, .modal-quickview, .product-modal, " +
+                 "[data-toggle=\"modal\"][href*=\"quickview\"], [data-target*=\"quickview\"]"
+             );
+             quickViewElements.forEach(function(element) {
+                 element.remove();
+             });
+         }, 1000);
+         </script>';
 
         return $css . $js;
     }
