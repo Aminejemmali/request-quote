@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.4';
+        $this->version = '2.1.5';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -29,9 +29,9 @@ class RequestQuote extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Request Quote');
-        $this->description = $this->l('Simple quote request system that hides prices and shows quote buttons.');
-        $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
+        $this->displayName = 'Demande de Devis';
+        $this->description = 'Système de demande de devis qui masque les prix et affiche des boutons de devis.';
+        $this->confirmUninstall = 'Êtes-vous sûr de vouloir désinstaller ce module ?';
 
         // Handle AJAX requests
         $this->handleAjaxRequest();
@@ -47,7 +47,7 @@ class RequestQuote extends Module
 
             try {
                 if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-                    throw new Exception('Quote requests are disabled');
+                    throw new Exception('Les demandes de devis sont désactivées');
                 }
 
                 // Get form data
@@ -57,13 +57,19 @@ class RequestQuote extends Module
                 $phone = trim(Tools::getValue('phone'));
                 $message = trim(Tools::getValue('message'));
 
-                // Validate
-                if (!$productId || !$clientName || !$email) {
-                    throw new Exception('Please fill in all required fields');
+                // Validate required fields
+                if (!$productId) {
+                    throw new Exception('Produit non spécifié');
+                }
+                if (!$clientName) {
+                    throw new Exception('Veuillez saisir votre nom');
+                }
+                if (!$email) {
+                    throw new Exception('Veuillez saisir votre adresse email');
                 }
 
                 if (!Validate::isEmail($email)) {
-                    throw new Exception('Invalid email address');
+                    throw new Exception('Adresse email invalide');
                 }
 
                 // Save to database
@@ -74,9 +80,9 @@ class RequestQuote extends Module
 
                 if (Db::getInstance()->execute($sql)) {
                     $response['success'] = true;
-                    $response['message'] = 'Quote request sent successfully!';
+                    $response['message'] = 'Votre demande de devis a été envoyée avec succès !';
                 } else {
-                    throw new Exception('Failed to save quote request');
+                    throw new Exception('Erreur lors de l\'enregistrement de votre demande');
                 }
 
             } catch (Exception $e) {
@@ -128,6 +134,9 @@ class RequestQuote extends Module
 
         // Set configuration
         Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
+
+        // Create admin tab under Sell menu
+        $this->installTab();
 
         return true;
     }
@@ -185,7 +194,7 @@ class RequestQuote extends Module
             visibility: hidden !important;
                  }
          
-                  /* Remove ALL quick preview traces and elements */
+                  /* Remove ALL quick preview traces, elements and hover effects */
          .quick-view, .quickview, .js-quick-view-btn, 
          .product-quickview, .quick-view-btn,
          .modal-quickview, .product-modal,
@@ -211,19 +220,34 @@ class RequestQuote extends Module
          .modal-dialog[id*="quickview"],
          .product-cover-modal,
          .js-product-cover-modal,
-         .product-images-modal {
+         .product-images-modal,
+         .product-miniature:hover .quick-view,
+         .product-thumbnail:hover .quick-view,
+         .js-product-miniature:hover .quick-view {
              display: none !important;
              visibility: hidden !important;
              opacity: 0 !important;
              pointer-events: none !important;
          }
          
-         /* Remove quick view icons and buttons completely */
+         /* Remove quick view icons, buttons and hover effects completely */
          .material-icons:contains("zoom_in"),
          .fa-search-plus,
          .icon-zoom-in,
-         .icon-eye {
+         .icon-eye,
+         .product-miniature:hover::before,
+         .product-thumbnail:hover::before,
+         .product-miniature:hover::after,
+         .product-thumbnail:hover::after {
              display: none !important;
+         }
+         
+         /* Disable hover effects that might show quick view */
+         .product-miniature:hover,
+         .product-thumbnail:hover,
+         .js-product-miniature:hover {
+             transform: none !important;
+             box-shadow: none !important;
          }
          
          /* Quote button styling */
@@ -294,20 +318,21 @@ class RequestQuote extends Module
                 var modal = document.createElement("div");
                 modal.id = "quoteModal";
                 modal.className = "quote-modal";
-                modal.innerHTML = `
-                    <div class="quote-modal-content">
-                        <span class="quote-close">&times;</span>
-                        <h3>Request Quote</h3>
-                        <form class="quote-form" id="quoteForm">
-                            <input type="text" name="client_name" placeholder="Your Name *" required>
-                            <input type="email" name="email" placeholder="Your Email *" required>
-                            <input type="tel" name="phone" placeholder="Phone Number">
-                            <textarea name="message" placeholder="Message" rows="3"></textarea>
-                            <input type="hidden" name="product_id" value="">
-                            <button type="submit" class="quote-submit">Send Quote Request</button>
-                        </form>
-                    </div>
-                `;
+                                 modal.innerHTML = `
+                     <div class="quote-modal-content">
+                         <span class="quote-close">&times;</span>
+                         <h3>Demande de Devis</h3>
+                         <div id="quote-messages" style="margin-bottom: 15px;"></div>
+                         <form class="quote-form" id="quoteForm">
+                             <input type="text" name="client_name" placeholder="Votre nom *" required>
+                             <input type="email" name="email" placeholder="Votre email *" required>
+                             <input type="tel" name="phone" placeholder="Téléphone (optionnel)">
+                             <textarea name="message" placeholder="Votre message (optionnel)" rows="3"></textarea>
+                             <input type="hidden" name="product_id" value="">
+                             <button type="submit" class="quote-submit">Envoyer la demande</button>
+                         </form>
+                     </div>
+                 `;
                 document.body.appendChild(modal);
             }
             
@@ -338,6 +363,17 @@ class RequestQuote extends Module
                          // Handle form submission
              document.getElementById("quoteForm").onsubmit = function(e) {
                  e.preventDefault();
+                 
+                 var messagesDiv = document.getElementById("quote-messages");
+                 var submitBtn = this.querySelector("button[type=submit]");
+                 
+                 // Clear previous messages
+                 messagesDiv.innerHTML = "";
+                 
+                 // Show loading
+                 submitBtn.disabled = true;
+                 submitBtn.textContent = "Envoi en cours...";
+                 
                  var formData = new FormData(this);
                  formData.append("action", "submitQuote");
                  
@@ -346,23 +382,33 @@ class RequestQuote extends Module
                  xhr.open("POST", window.location.href, true);
                  xhr.onreadystatechange = function() {
                      if (xhr.readyState === 4) {
+                         // Reset button
+                         submitBtn.disabled = false;
+                         submitBtn.textContent = "Envoyer la demande";
+                         
                          if (xhr.status === 200) {
                              try {
                                  var response = JSON.parse(xhr.responseText);
                                  if (response.success) {
-                                     alert("Quote request sent successfully!");
-                                     modal.style.display = "none";
-                                     document.getElementById("quoteForm").reset();
+                                     messagesDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> ' + response.message + '</div>';
+                                     setTimeout(function() {
+                                         modal.style.display = "none";
+                                         document.getElementById("quoteForm").reset();
+                                         messagesDiv.innerHTML = "";
+                                     }, 2000);
                                  } else {
-                                     alert("Error: " + response.message);
+                                     messagesDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> ' + response.message + '</div>';
                                  }
                              } catch (e) {
-                                 alert("Quote request sent successfully!");
-                                 modal.style.display = "none";
-                                 document.getElementById("quoteForm").reset();
+                                 messagesDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> Votre demande a été envoyée !</div>';
+                                 setTimeout(function() {
+                                     modal.style.display = "none";
+                                     document.getElementById("quoteForm").reset();
+                                     messagesDiv.innerHTML = "";
+                                 }, 2000);
                              }
                          } else {
-                             alert("Error sending request. Please try again.");
+                             messagesDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> Erreur de connexion. Veuillez réessayer.</div>';
                          }
                      }
                  };
@@ -409,7 +455,7 @@ class RequestQuote extends Module
         $product = $params['product'];
         return '<div class="text-center">
                     <button class="request-quote-btn" data-product-id="' . (int)$product->id . '">
-                        Request Quote
+                        Demander un Devis
                     </button>
                 </div>';
     }
@@ -434,7 +480,7 @@ class RequestQuote extends Module
         $product = $params['product'];
         return '<div class="product-actions-main">
                     <button class="request-quote-btn" data-product-id="' . (int)$product['id_product'] . '">
-                        Request Quote
+                        Demander un Devis
                     </button>
                 </div>';
     }
@@ -468,9 +514,9 @@ class RequestQuote extends Module
         if (Tools::isSubmit('delete_quote')) {
             $id_quote = (int)Tools::getValue('id_quote');
             if (Db::getInstance()->delete('requestquote_quotes', 'id_quote = ' . $id_quote)) {
-                $output .= $this->displayConfirmation($this->l('Quote deleted successfully.'));
+                $output .= $this->displayConfirmation('Devis supprimé avec succès.');
             } else {
-                $output .= $this->displayError($this->l('Error deleting quote.'));
+                $output .= $this->displayError('Erreur lors de la suppression du devis.');
             }
         }
 
@@ -478,7 +524,7 @@ class RequestQuote extends Module
         if (Tools::isSubmit('submit' . $this->name)) {
             $enabled = (int)Tools::getValue('REQUESTQUOTE_ENABLED');
             Configuration::updateValue('REQUESTQUOTE_ENABLED', $enabled);
-            $output .= $this->displayConfirmation($this->l('Settings updated successfully.'));
+            $output .= $this->displayConfirmation('Paramètres mis à jour avec succès.');
         }
 
         return $output . $this->displayForm() . $this->displayQuotes();
@@ -489,34 +535,34 @@ class RequestQuote extends Module
      */
     public function displayForm()
     {
-        $form = [
+                $form = [
             'form' => [
-            'legend' => [
-                'title' => $this->l('Settings'),
-            ],
-            'input' => [
-                [
-                    'type' => 'switch',
-                    'label' => $this->l('Enable Quote Requests'),
-                    'name' => 'REQUESTQUOTE_ENABLED',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'active_on',
-                            'value' => true,
-                            'label' => $this->l('Enabled')
+                'legend' => [
+                    'title' => 'Paramètres',
+                ],
+                'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => 'Activer les demandes de devis',
+                        'name' => 'REQUESTQUOTE_ENABLED',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => 'Activé'
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => 'Désactivé'
+                            ]
                         ],
-                        [
-                            'id' => 'active_off',
-                            'value' => false,
-                            'label' => $this->l('Disabled')
-                        ]
                     ],
                 ],
-            ],
-            'submit' => [
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
+                'submit' => [
+                    'title' => 'Enregistrer',
+                    'class' => 'btn btn-default pull-right'
                 ]
             ]
         ];
@@ -553,7 +599,7 @@ class RequestQuote extends Module
         $html = '<div class="panel" style="margin-top: 20px;">
                     <div class="panel-heading">
                         <i class="icon-list"></i>
-                        ' . $this->l('Quote Requests') . ' (' . (count($quotes) ?: 0) . ' ' . $this->l('total') . ')
+                        Demandes de Devis (' . (count($quotes) ?: 0) . ' au total)
                     </div>
                     <div class="panel-body">';
 
@@ -562,14 +608,14 @@ class RequestQuote extends Module
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>' . $this->l('ID') . '</th>
-                                    <th>' . $this->l('Client') . '</th>
-                                    <th>' . $this->l('Email') . '</th>
-                                    <th>' . $this->l('Phone') . '</th>
-                                    <th>' . $this->l('Product') . '</th>
-                                    <th>' . $this->l('Message') . '</th>
-                                    <th>' . $this->l('Date') . '</th>
-                                    <th>' . $this->l('Actions') . '</th>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Produit</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>';
@@ -578,19 +624,19 @@ class RequestQuote extends Module
                 $productName = $quote['product_name'] ?: 'Product #' . $quote['id_product'];
                 $message = $quote['message'] ? (strlen($quote['message']) > 50 ? substr($quote['message'], 0, 47) . '...' : $quote['message']) : '-';
                 
-                $html .= '<tr>
+                                 $html .= '<tr>
                             <td>#' . (int)$quote['id_quote'] . '</td>
                             <td>' . htmlspecialchars($quote['client_name']) . '</td>
                             <td><a href="mailto:' . htmlspecialchars($quote['email']) . '">' . htmlspecialchars($quote['email']) . '</a></td>
                             <td>' . ($quote['phone'] ? htmlspecialchars($quote['phone']) : '-') . '</td>
                             <td>' . htmlspecialchars($productName) . '</td>
                             <td title="' . htmlspecialchars($quote['message']) . '">' . htmlspecialchars($message) . '</td>
-                            <td>' . date('Y-m-d H:i', strtotime($quote['date_add'])) . '</td>
+                            <td>' . date('d/m/Y H:i', strtotime($quote['date_add'])) . '</td>
                             <td>
                                 <a href="' . $_SERVER['REQUEST_URI'] . '&delete_quote=1&id_quote=' . (int)$quote['id_quote'] . '" 
                                    class="btn btn-danger btn-xs" 
-                                   onclick="return confirm(\'' . $this->l('Are you sure you want to delete this quote?') . '\');">
-                                    <i class="icon-trash"></i> ' . $this->l('Delete') . '
+                                   onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer ce devis ?\');">
+                                    <i class="icon-trash"></i> Supprimer
                                 </a>
                             </td>
                           </tr>';
@@ -600,14 +646,49 @@ class RequestQuote extends Module
         } else {
             $html .= '<div class="alert alert-info">
                         <i class="icon-info-circle"></i>
-                        ' . $this->l('No quote requests found yet.') . '
+                        Aucune demande de devis trouvée pour le moment.
                       </div>';
         }
 
         $html .= '</div></div>';
 
-        return $html;
+                return $html;
     }
 
+    /**
+     * Install admin tab under Sell menu
+     */
+    private function installTab()
+    {
+        // Check if tab already exists
+        $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
+        if ($tabId) {
+            return true; // Tab already exists
+        }
+
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminRequestQuote';
+        $tab->name = array();
         
-} 
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = 'Demandes de Devis';
+        }
+        
+        // Place under Sell menu
+        $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
+        if (!$parentId) {
+            $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
+        }
+        
+        $tab->id_parent = $parentId;
+        $tab->module = $this->name;
+        
+        try {
+            return $tab->add();
+        } catch (Exception $e) {
+            // If tab creation fails, quotes are still accessible via module config
+            return true;
+        }
+    }
+}  
