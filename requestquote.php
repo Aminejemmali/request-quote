@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.5';
+        $this->version = '2.1.6';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -159,7 +159,7 @@ class RequestQuote extends Module
         return parent::uninstall();
     }
 
-    /**
+        /**
      * Display header - Add CSS to hide prices and add modal
      */
     public function hookDisplayHeader($params)
@@ -168,8 +168,7 @@ class RequestQuote extends Module
             return '';
         }
 
-        $css = '
-        <style>
+        $css = '<style>
         /* Hide ALL prices and add to cart across ALL pages */
         .product-price, .current-price, .regular-price, .discount-percentage,
         .product-add-to-cart, .add-to-cart, .btn-add-to-cart,
@@ -192,78 +191,78 @@ class RequestQuote extends Module
         span[itemprop="price"], span[itemprop="lowPrice"], span[itemprop="highPrice"] {
             display: none !important;
             visibility: hidden !important;
-                 }
-         
-                  /* Remove ALL quick preview traces, elements and hover effects */
-         .quick-view, .quickview, .js-quick-view-btn, 
-         .product-quickview, .quick-view-btn,
-         .modal-quickview, .product-modal,
-         .product-miniature .quick-view,
-         .thumbnail-container .quick-view,
-         .product-thumbnail .quick-view,
-         .js-product-miniature .quick-view,
-         .featured-products .quick-view,
-         .product-list .quick-view,
-         .products .quick-view,
-         .category-products .quick-view,
-         .search-results .quick-view,
-         .new-products .quick-view,
-         .highlighted-informations .quick-view,
-         .product-actions .quick-view,
-         .product-functional-buttons .quick-view,
-         a[data-link-action="quickview"],
-         button[data-link-action="quickview"],
-         .btn[data-link-action="quickview"],
-         [data-toggle="modal"][href*="quickview"],
-         [data-target*="quickview"],
-         .modal[id*="quickview"],
-         .modal-dialog[id*="quickview"],
-         .product-cover-modal,
-         .js-product-cover-modal,
-         .product-images-modal,
-         .product-miniature:hover .quick-view,
-         .product-thumbnail:hover .quick-view,
-         .js-product-miniature:hover .quick-view {
-             display: none !important;
-             visibility: hidden !important;
-             opacity: 0 !important;
-             pointer-events: none !important;
-         }
-         
-         /* Remove quick view icons, buttons and hover effects completely */
-         .material-icons:contains("zoom_in"),
-         .fa-search-plus,
-         .icon-zoom-in,
-         .icon-eye,
-         .product-miniature:hover::before,
-         .product-thumbnail:hover::before,
-         .product-miniature:hover::after,
-         .product-thumbnail:hover::after {
-             display: none !important;
-         }
-         
-         /* Disable hover effects that might show quick view */
-         .product-miniature:hover,
-         .product-thumbnail:hover,
-         .js-product-miniature:hover {
-             transform: none !important;
-             box-shadow: none !important;
-         }
-         
-         /* Quote button styling */
-                    .request-quote-btn {
+        }
+        
+        /* Remove ALL quick preview traces, elements and hover effects */
+        .quick-view, .quickview, .js-quick-view-btn, 
+        .product-quickview, .quick-view-btn,
+        .modal-quickview, .product-modal,
+        .product-miniature .quick-view,
+        .thumbnail-container .quick-view,
+        .product-thumbnail .quick-view,
+        .js-product-miniature .quick-view,
+        .featured-products .quick-view,
+        .product-list .quick-view,
+        .products .quick-view,
+        .category-products .quick-view,
+        .search-results .quick-view,
+        .new-products .quick-view,
+        .highlighted-informations .quick-view,
+        .product-actions .quick-view,
+        .product-functional-buttons .quick-view,
+        a[data-link-action="quickview"],
+        button[data-link-action="quickview"],
+        .btn[data-link-action="quickview"],
+        [data-toggle="modal"][href*="quickview"],
+        [data-target*="quickview"],
+        .modal[id*="quickview"],
+        .modal-dialog[id*="quickview"],
+        .product-cover-modal,
+        .js-product-cover-modal,
+        .product-images-modal,
+        .product-miniature:hover .quick-view,
+        .product-thumbnail:hover .quick-view,
+        .js-product-miniature:hover .quick-view {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Remove quick view icons, buttons and hover effects completely */
+        .material-icons:contains("zoom_in"),
+        .fa-search-plus,
+        .icon-zoom-in,
+        .icon-eye,
+        .product-miniature:hover::before,
+        .product-thumbnail:hover::before,
+        .product-miniature:hover::after,
+        .product-thumbnail:hover::after {
+            display: none !important;
+        }
+        
+        /* Disable hover effects that might show quick view */
+        .product-miniature:hover,
+        .product-thumbnail:hover,
+        .js-product-miniature:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Quote button styling */
+        .request-quote-btn {
             background: #007bff;
             color: white;
-                        border: none;
+            border: none;
             padding: 12px 24px;
             border-radius: 4px;
             font-size: 16px;
             cursor: pointer;
             margin: 10px 0;
-                    }
-                    .request-quote-btn:hover {
+        }
+        .request-quote-btn:hover {
             background: #0056b3;
-                        color: white;
+            color: white;
         }
         
         /* Simple modal */
@@ -276,7 +275,7 @@ class RequestQuote extends Module
             height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 9999;
-                    }
+        }
         .quote-modal-content {
             position: absolute;
             top: 50%;
@@ -284,7 +283,7 @@ class RequestQuote extends Module
             transform: translate(-50%, -50%);
             background: white;
             padding: 20px;
-                        border-radius: 8px;
+            border-radius: 8px;
             width: 90%;
             max-width: 500px;
         }
@@ -307,32 +306,17 @@ class RequestQuote extends Module
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
-                    }
-                </style>';
+        }
+        </style>';
 
-        $js = '
-        <script>
-                    document.addEventListener("DOMContentLoaded", function() {
+        $js = '<script>
+        document.addEventListener("DOMContentLoaded", function() {
             // Add modal to page
             if (!document.getElementById("quoteModal")) {
                 var modal = document.createElement("div");
                 modal.id = "quoteModal";
                 modal.className = "quote-modal";
-                                 modal.innerHTML = `
-                     <div class="quote-modal-content">
-                         <span class="quote-close">&times;</span>
-                         <h3>Demande de Devis</h3>
-                         <div id="quote-messages" style="margin-bottom: 15px;"></div>
-                         <form class="quote-form" id="quoteForm">
-                             <input type="text" name="client_name" placeholder="Votre nom *" required>
-                             <input type="email" name="email" placeholder="Votre email *" required>
-                             <input type="tel" name="phone" placeholder="Téléphone (optionnel)">
-                             <textarea name="message" placeholder="Votre message (optionnel)" rows="3"></textarea>
-                             <input type="hidden" name="product_id" value="">
-                             <button type="submit" class="quote-submit">Envoyer la demande</button>
-                         </form>
-                     </div>
-                 `;
+                modal.innerHTML = \'<div class="quote-modal-content"><span class="quote-close">&times;</span><h3>Demande de Devis</h3><div id="quote-messages" style="margin-bottom: 15px;"></div><form class="quote-form" id="quoteForm"><input type="text" name="client_name" placeholder="Votre nom *" required><input type="email" name="email" placeholder="Votre email *" required><input type="tel" name="phone" placeholder="Téléphone (optionnel)"><textarea name="message" placeholder="Votre message (optionnel)" rows="3"></textarea><input type="hidden" name="product_id" value=""><button type="submit" class="quote-submit">Envoyer la demande</button></form></div>\';
                 document.body.appendChild(modal);
             }
             
@@ -360,85 +344,85 @@ class RequestQuote extends Module
                 }
             });
             
-                         // Handle form submission
-             document.getElementById("quoteForm").onsubmit = function(e) {
-                 e.preventDefault();
-                 
-                 var messagesDiv = document.getElementById("quote-messages");
-                 var submitBtn = this.querySelector("button[type=submit]");
-                 
-                 // Clear previous messages
-                 messagesDiv.innerHTML = "";
-                 
-                 // Show loading
-                 submitBtn.disabled = true;
-                 submitBtn.textContent = "Envoi en cours...";
-                 
-                 var formData = new FormData(this);
-                 formData.append("action", "submitQuote");
-                 
-                 // Use a simple AJAX request to current page
-                 var xhr = new XMLHttpRequest();
-                 xhr.open("POST", window.location.href, true);
-                 xhr.onreadystatechange = function() {
-                     if (xhr.readyState === 4) {
-                         // Reset button
-                         submitBtn.disabled = false;
-                         submitBtn.textContent = "Envoyer la demande";
-                         
-                         if (xhr.status === 200) {
-                             try {
-                                 var response = JSON.parse(xhr.responseText);
-                                 if (response.success) {
-                                     messagesDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> ' + response.message + '</div>';
-                                     setTimeout(function() {
-                                         modal.style.display = "none";
-                                         document.getElementById("quoteForm").reset();
-                                         messagesDiv.innerHTML = "";
-                                     }, 2000);
-                                 } else {
-                                     messagesDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> ' + response.message + '</div>';
-                                 }
-                             } catch (e) {
-                                 messagesDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> Votre demande a été envoyée !</div>';
-                                 setTimeout(function() {
-                                     modal.style.display = "none";
-                                     document.getElementById("quoteForm").reset();
-                                     messagesDiv.innerHTML = "";
-                                 }, 2000);
-                             }
-                         } else {
-                             messagesDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> Erreur de connexion. Veuillez réessayer.</div>';
-                         }
-                     }
-                 };
-                 xhr.send(formData);
-             };
-                 });
-         
-         // Completely disable quick view functionality
-         document.addEventListener("click", function(e) {
-             // Block all quick view related clicks
-             if (e.target.matches(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"]") ||
-                 e.target.closest(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"]")) {
-                 e.preventDefault();
-                 e.stopPropagation();
-                 return false;
-             }
-         }, true);
-         
-         // Remove quick view elements after page load
-         setTimeout(function() {
-             var quickViewElements = document.querySelectorAll(
-                 ".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\"quickview\"], " +
-                 ".product-quickview, .quick-view-btn, .modal-quickview, .product-modal, " +
-                 "[data-toggle=\"modal\"][href*=\"quickview\"], [data-target*=\"quickview\"]"
-             );
-             quickViewElements.forEach(function(element) {
-                 element.remove();
-             });
-         }, 1000);
-         </script>';
+            // Handle form submission
+            document.getElementById("quoteForm").onsubmit = function(e) {
+                e.preventDefault();
+                
+                var messagesDiv = document.getElementById("quote-messages");
+                var submitBtn = this.querySelector("button[type=submit]");
+                
+                // Clear previous messages
+                messagesDiv.innerHTML = "";
+                
+                // Show loading
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Envoi en cours...";
+                
+                var formData = new FormData(this);
+                formData.append("action", "submitQuote");
+                
+                // Use a simple AJAX request to current page
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", window.location.href, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        // Reset button
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Envoyer la demande";
+                        
+                        if (xhr.status === 200) {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response.success) {
+                                    messagesDiv.innerHTML = \'<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> \' + response.message + \'</div>\';
+                                    setTimeout(function() {
+                                        modal.style.display = "none";
+                                        document.getElementById("quoteForm").reset();
+                                        messagesDiv.innerHTML = "";
+                                    }, 2000);
+                                } else {
+                                    messagesDiv.innerHTML = \'<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> \' + response.message + \'</div>\';
+                                }
+                            } catch (e) {
+                                messagesDiv.innerHTML = \'<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Succès :</strong> Votre demande a été envoyée !</div>\';
+                                setTimeout(function() {
+                                    modal.style.display = "none";
+                                    document.getElementById("quoteForm").reset();
+                                    messagesDiv.innerHTML = "";
+                                }, 2000);
+                            }
+                        } else {
+                            messagesDiv.innerHTML = \'<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>Erreur :</strong> Erreur de connexion. Veuillez réessayer.</div>\';
+                        }
+                    }
+                };
+                xhr.send(formData);
+            };
+        });
+        
+        // Completely disable quick view functionality
+        document.addEventListener("click", function(e) {
+            // Block all quick view related clicks
+            if (e.target.matches(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\\"quickview\\"]") ||
+                e.target.closest(".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\\"quickview\\"]")) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
+        
+        // Remove quick view elements after page load
+        setTimeout(function() {
+            var quickViewElements = document.querySelectorAll(
+                ".quick-view, .quickview, .js-quick-view-btn, [data-link-action=\\"quickview\\"], " +
+                ".product-quickview, .quick-view-btn, .modal-quickview, .product-modal, " +
+                "[data-toggle=\\"modal\\"][href*=\\"quickview\\"], [data-target*=\\"quickview\\"]"
+            );
+            quickViewElements.forEach(function(element) {
+                element.remove();
+            });
+        }, 1000);
+        </script>';
 
         return $css . $js;
     }
