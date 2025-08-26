@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.6';
+        $this->version = '2.1.7';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -101,7 +101,14 @@ class RequestQuote extends Module
             return false;
         }
 
-        // Create database table
+        // Vérifier les données existantes avant installation
+        $existingQuotes = $this->checkDataIntegrity();
+        if ($existingQuotes > 0) {
+            // Créer une sauvegarde automatique
+            $this->backupQuotes();
+        }
+
+        // Create database table (IF NOT EXISTS préserve les données)
         $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
             `id_quote` int(11) NOT NULL AUTO_INCREMENT,
             `id_product` int(11) NOT NULL,
@@ -135,18 +142,15 @@ class RequestQuote extends Module
         // Set configuration
         Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
 
-        // Create admin tab under Sell menu
-        $this->installTab();
-
         return true;
     }
 
         public function uninstall()
     {
-        // Remove table
-        Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`');
+        // IMPORTANT: Ne pas supprimer la table pour préserver les données
+        // Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`');
         
-        // Remove configuration
+        // Remove configuration only
         Configuration::deleteByName('REQUESTQUOTE_ENABLED');
 
         // Clean up any existing admin tabs
@@ -580,10 +584,12 @@ class RequestQuote extends Module
         
         $quotes = Db::getInstance()->executeS($sql);
 
+        $totalQuotes = count($quotes) ?: 0;
         $html = '<div class="panel" style="margin-top: 20px;">
                     <div class="panel-heading">
                         <i class="icon-list"></i>
-                        Demandes de Devis (' . (count($quotes) ?: 0) . ' au total)
+                        Demandes de Devis (' . $totalQuotes . ' au total)
+                        ' . ($totalQuotes > 0 ? '<span style="color: #28a745; margin-left: 10px;"><i class="icon-check"></i> Données préservées</span>' : '') . '
                     </div>
                     <div class="panel-body">';
 
@@ -636,43 +642,43 @@ class RequestQuote extends Module
 
         $html .= '</div></div>';
 
-                return $html;
+                        return $html;
     }
 
     /**
-     * Install admin tab under Sell menu
+     * Créer une sauvegarde des demandes de devis existantes
      */
-    private function installTab()
+    public function backupQuotes()
     {
-        // Check if tab already exists
-        $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
-        if ($tabId) {
-            return true; // Tab already exists
-        }
-
-        $tab = new Tab();
-        $tab->active = 1;
-        $tab->class_name = 'AdminRequestQuote';
-        $tab->name = array();
-        
-        foreach (Language::getLanguages(true) as $lang) {
-            $tab->name[$lang['id_lang']] = 'Demandes de Devis';
-        }
-        
-        // Place under Sell menu
-        $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
-        if (!$parentId) {
-            $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
-        }
-        
-        $tab->id_parent = $parentId;
-        $tab->module = $this->name;
-        
         try {
-            return $tab->add();
+            $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'requestquote_quotes` ORDER BY date_add DESC';
+            $quotes = Db::getInstance()->executeS($sql);
+            
+            if ($quotes && count($quotes) > 0) {
+                $backupFile = _PS_MODULE_DIR_ . $this->name . '/backup_quotes_' . date('Y-m-d_H-i-s') . '.json';
+                file_put_contents($backupFile, json_encode($quotes, JSON_PRETTY_PRINT));
+                return $backupFile;
+            }
         } catch (Exception $e) {
-            // If tab creation fails, quotes are still accessible via module config
-            return true;
+            // Sauvegarde échouée mais on continue
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Vérifier l'intégrité des données existantes
+     */
+    public function checkDataIntegrity()
+    {
+        try {
+            $sql = 'SELECT COUNT(*) as total FROM `' . _DB_PREFIX_ . 'requestquote_quotes`';
+            $result = Db::getInstance()->getRow($sql);
+            return (int)$result['total'];
+        } catch (Exception $e) {
+            return 0;
         }
     }
-}  
+
+ 
+}   
