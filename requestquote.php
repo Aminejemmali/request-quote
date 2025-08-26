@@ -1,38 +1,11 @@
 <?php
 /**
  * RequestQuote Module for PrestaShop 9.0.0
- * 
- * This module allows customers to request quotes for products instead of purchasing them directly.
- * It hides the price and add-to-cart functionality and replaces it with a quote request form.
+ * Simple and clean quote request system
  * 
  * @author Amine Jameli
- * @version 2.0.2
+ * @version 2.1.0
  * @license MIT
- * @since 1.0.0
- * @updated 2024-12-19
- * 
- * Version 2.0.2 Changes:
- * - Fixed "Cannot redeclare" compile errors caused by duplicate methods
- * - Removed duplicate hookDisplayAfterProductThumbs() method
- * - Removed duplicate hookDisplayProductButtons() method  
- * - Removed duplicate hookDisplayProductListFunctionalButtons() method
- * - Cleaned up code structure and improved maintainability
- * 
- * Version 2.0.1 Changes:
- * - Fixed missing hook methods causing reset issues
- * - Cleaned up duplicate hook implementations
- * - Simplified CSS rules for better performance
- * 
- * Version 2.0.0 Changes:
- * - Fixed critical issues with request button only showing in quick preview
- * - Fixed modal getting stuck problems
- * - Fixed admin panel not appearing in Sell menu
- * - Enhanced hook integration for better theme compatibility
- * - Improved AJAX handling and error management
- * - Added unique modal IDs to prevent conflicts
- * - Better image preservation while hiding prices
- * - Enhanced security and validation
- * - Comprehensive documentation and testing guides
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -41,14 +14,11 @@ if (!defined('_PS_VERSION_')) {
 
 class RequestQuote extends Module
 {
-    /**
-     * Constructor - Initialize module properties
-     */
     public function __construct()
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.0.2';
+        $this->version = '2.1.0';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -60,233 +30,64 @@ class RequestQuote extends Module
         parent::__construct();
 
         $this->displayName = $this->l('Request Quote');
-        $this->description = $this->l('Allow customers to request quotes for products instead of purchasing directly.');
-        $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module? All quote requests will be lost.');
+        $this->description = $this->l('Simple quote request system that hides prices and shows quote buttons.');
+        $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
     }
 
-    /**
-     * Install the module
-     * Creates database table and registers hooks
-     */
     public function install()
     {
-        // Vérifier les prérequis AVANT tout
-        if (!$this->checkRequirements()) {
-            return false;
-        }
-
-        // Appeler parent::install() EN PREMIER
         if (!parent::install()) {
-            $this->_errors[] = $this->l('Failed to install parent module');
             return false;
         }
 
-        // Check if PrestaShop version is compatible
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-        }
+        // Create database table
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
+            `id_quote` int(11) NOT NULL AUTO_INCREMENT,
+            `id_product` int(11) NOT NULL,
+            `client_name` varchar(255) NOT NULL,
+            `email` varchar(255) NOT NULL,
+            `phone` varchar(50) DEFAULT NULL,
+            `message` text DEFAULT NULL,
+            `date_add` datetime NOT NULL,
+            PRIMARY KEY (`id_quote`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4';
 
-        // Create database table for quote requests
-        if (!$this->createQuoteRequestsTable()) {
-            $this->uninstall();
+        if (!Db::getInstance()->execute($sql)) {
             return false;
         }
 
         // Register hooks
         $hooks = [
-            'displayProductActions',           // Hook for product page actions (Classic theme)
-            'displayHeader',                   // Hook for header assets
-            'displayProductAdditionalInfo',    // Hook to hide price and add to cart
-            'displayProductPriceBlock',        // Hook to hide price blocks
-            'displayAfterProductThumbs',       // Hook for additional product info
-            'displayProductButtons',           // Hook for product buttons
-            'displayProductListFunctionalButtons', // Hook for product list buttons
-            'displayRightColumnProduct',       // Right column on product page
-            'displayLeftColumnProduct',        // Left column on product page
-            'actionFrontControllerSetMedia',   // Add CSS/JS files
+            'displayHeader',
+            'displayProductActions',
+            'displayProductAdditionalInfo',
         ];
 
         foreach ($hooks as $hook) {
             if (!$this->registerHook($hook)) {
-                $this->_errors[] = $this->l('Failed to register hook: ') . $hook;
-                $this->uninstall();
                 return false;
             }
         }
 
-        // Set default configuration
-        if (!Configuration::updateValue('REQUESTQUOTE_ENABLED', 1) ||
-            !Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0)) {
-            $this->_errors[] = $this->l('Failed to set default configuration');
-            $this->uninstall();
-            return false;
-        }
-
-        // Create admin tab
-        if (!$this->createAdminTab()) {
-            $this->_errors[] = $this->l('Failed to create admin tab');
-            $this->uninstall();
-            return false;
-        }
+        // Set configuration
+        Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
 
         return true;
     }
 
-    /**
-     * Vérifier les prérequis système
-     */
-    private function checkRequirements()
-    {
-        // Vérifier la version PHP
-        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
-            $this->_errors[] = $this->l('PHP 8.0 or higher is required. Current version: ') . PHP_VERSION;
-            return false;
-        }
-
-        // Vérifier la version PrestaShop
-        if (version_compare(_PS_VERSION_, '9.0.0', '<')) {
-            $this->_errors[] = $this->l('PrestaShop 9.0.0 or higher is required. Current version: ') . _PS_VERSION_;
-            return false;
-        }
-
-        // Vérifier les extensions PHP requises
-        $required_extensions = ['pdo', 'pdo_mysql', 'json'];
-        foreach ($required_extensions as $ext) {
-            if (!extension_loaded($ext)) {
-                $this->_errors[] = $this->l('PHP extension required: ') . $ext;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Uninstall the module
-     * Removes database table, hooks, and admin tab
-     */
     public function uninstall()
     {
-        try {
-            // Remove database table
-            if (!$this->dropQuoteRequestsTable()) {
-                $this->_errors[] = $this->l('Failed to drop database table');
-            }
-
-                    // Remove configuration values
-        if (!Configuration::deleteByName('REQUESTQUOTE_ENABLED') ||
-            !Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE')) {
-            $this->_errors[] = $this->l('Failed to remove configuration values');
-        }
-
-        // Remove admin tab
-        if (!$this->removeAdminTab()) {
-            $this->_errors[] = $this->l('Failed to remove admin tab');
-        }
-
-            // Appeler parent::uninstall() en dernier
-            return parent::uninstall();
-        } catch (Exception $e) {
-            $this->_errors[] = $this->l('Uninstall error: ') . $e->getMessage();
-            return false;
-        }
-    }
-
-    /**
-     * Drop the database table for quote requests
-     */
-    private function dropQuoteRequestsTable()
-    {
-        try {
-            $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`';
-            $result = Db::getInstance()->execute($sql);
-            
-            if (!$result) {
-                $this->_errors[] = $this->l('Failed to drop database table: ') . Db::getInstance()->getMsgError();
-                return false;
-            }
-
-            return true;
-        } catch (Exception $e) {
-            $this->_errors[] = $this->l('Database table drop error: ') . $e->getMessage();
-            return false;
-        }
-    }
-
-    /**
-     * Create the database table for quote requests
-     */
-    private function createQuoteRequestsTable()
-    {
-        try {
-            $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
-                `id_quote` int(11) NOT NULL AUTO_INCREMENT,
-                `id_product` int(11) NOT NULL,
-                `id_shop` int(11) NOT NULL DEFAULT 1,
-                `client_name` varchar(255) NOT NULL,
-                `email` varchar(255) NOT NULL,
-                `phone` varchar(50) DEFAULT NULL,
-                `note` text DEFAULT NULL,
-                `date_add` datetime NOT NULL,
-                `date_upd` datetime NOT NULL,
-                PRIMARY KEY (`id_quote`),
-                KEY `id_product` (`id_product`),
-                KEY `id_shop` (`id_shop`)
-            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;';
-
-            $result = Db::getInstance()->execute($sql);
-            
-            if (!$result) {
-                $this->_errors[] = $this->l('Failed to create database table: ') . Db::getInstance()->getMsgError();
-                return false;
-            }
-
-            return true;
-        } catch (Exception $e) {
-            $this->_errors[] = $this->l('Database table creation error: ') . $e->getMessage();
-            return false;
-        }
-    }
-
-
-
-
-
-    /**
-     * Hook: displayProductActions - Modify product page to show quote button instead of add to cart
-     */
-    public function hookDisplayProductActions($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        // Vérification des paramètres
-        if (!isset($params['product']) || !is_object($params['product'])) {
-            return '';
-        }
-
-        $product = $params['product'];
+        // Remove table
+        Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`');
         
-        // Assign template variables
-        $this->context->smarty->assign([
-            'product' => $product,
-            'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
-            'csrf_token' => Tools::getToken(false),
-            'module_dir' => $this->_path,
-            'module_name' => $this->name,
-        ]);
+        // Remove configuration
+        Configuration::deleteByName('REQUESTQUOTE_ENABLED');
 
-        // Return the template
-        return $this->display(__FILE__, 'views/templates/hook/product-actions.tpl');
+        return parent::uninstall();
     }
 
-
-
-
-
     /**
-     * Hook: displayHeader - Inject CSS and JavaScript for quote request functionality
+     * Display header - Add CSS to hide prices and add modal
      */
     public function hookDisplayHeader($params)
     {
@@ -294,317 +95,177 @@ class RequestQuote extends Module
             return '';
         }
 
-        // Add CSS and JS files
-        $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
-        $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
-
-        // CSS global pour masquer les prix sur toutes les pages - More selective to preserve images
-        $globalCss = '<style>
-            /* Hide pricing and add-to-cart elements while preserving images */
-            .product-add-to-cart,
-            .product-variants,
-            .product-customization,
-            .product-quantity,
-            .product-price,
-            .current-price,
-            .regular-price,
-            .discount-percentage,
-            .product-discounts,
-            .product-pack {
-                display: none !important;
-            }
-            
-            /* Ensure product images and essential elements remain visible */
-            .product-cover,
-            .product-images,
-            .product-cover-modal,
-            .product-thumbs,
-            .product-thumb,
-            .product-cover-thumbnails,
-            .js-qv-product-cover,
-            .product-information .product-title,
-            .product-information .product-description,
-            .product-information .product-description-short,
-            .product-information .product-details,
-            .product-information .product-miniature,
-            .product-miniature .product-thumbnail,
-            .quickview .product-cover {
-                display: block !important;
-            }
+        $css = '
+        <style>
+        /* Hide prices and add to cart */
+        .product-price, .current-price, .regular-price, .discount-percentage,
+        .product-add-to-cart, .add-to-cart, .btn-add-to-cart,
+        .product-quantity, .product-variants, .product-customization {
+            display: none !important;
+        }
+        
+        /* Quote button styling */
+        .request-quote-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .request-quote-btn:hover {
+            background: #0056b3;
+            color: white;
+        }
+        
+        /* Simple modal */
+        .quote-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+        .quote-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .quote-close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .quote-form input, .quote-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .quote-submit {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
         </style>';
 
-        // Vérification du contexte pour éviter de charger sur toutes les pages
-        if (isset($this->context->controller) && 
-            property_exists($this->context->controller, 'controller_type') && 
-            property_exists($this->context->controller, 'php_self')) {
+        $js = '
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Add modal to page
+            if (!document.getElementById("quoteModal")) {
+                var modal = document.createElement("div");
+                modal.id = "quoteModal";
+                modal.className = "quote-modal";
+                modal.innerHTML = `
+                    <div class="quote-modal-content">
+                        <span class="quote-close">&times;</span>
+                        <h3>Request Quote</h3>
+                        <form class="quote-form" id="quoteForm">
+                            <input type="text" name="client_name" placeholder="Your Name *" required>
+                            <input type="email" name="email" placeholder="Your Email *" required>
+                            <input type="tel" name="phone" placeholder="Phone Number">
+                            <textarea name="message" placeholder="Message" rows="3"></textarea>
+                            <input type="hidden" name="product_id" value="">
+                            <button type="submit" class="quote-submit">Send Quote Request</button>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
             
-            if ($this->context->controller->controller_type === 'front' && 
-                $this->context->controller->php_self === 'product') {
+            // Handle modal
+            var modal = document.getElementById("quoteModal");
+            var closeBtn = modal.querySelector(".quote-close");
+            
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+            
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            
+            // Handle quote buttons
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("request-quote-btn")) {
+                    e.preventDefault();
+                    var productId = e.target.getAttribute("data-product-id");
+                    modal.querySelector("input[name=product_id]").value = productId;
+                    modal.style.display = "block";
+                }
+            });
+            
+            // Handle form submission
+            document.getElementById("quoteForm").onsubmit = function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                formData.append("action", "submitQuote");
                 
-                // CSS inline pour le style du bouton et du modal
-                $css = '<style>
-                    .request-quote-section {
-                        margin: 20px 0;
-                        text-align: center;
+                fetch("' . $this->context->link->getModuleLink('requestquote', 'ajax') . '", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Quote request sent successfully!");
+                        modal.style.display = "none";
+                        document.getElementById("quoteForm").reset();
+                    } else {
+                        alert("Error: " + data.message);
                     }
-                    .request-quote-btn {
-                        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                        border: none;
-                        padding: 15px 30px;
-                        font-size: 18px;
-                        font-weight: 600;
-                        border-radius: 50px;
-                        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-                        transition: all 0.3s ease;
-                        min-width: 200px;
-                    }
-                    .request-quote-btn:hover {
-                        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-                    }
-                    .request-quote-btn i {
-                        margin-right: 8px;
-                    }
-                    .modal-content {
-                        border-radius: 12px;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-                    }
-                    .modal-header {
-                        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                        color: white;
-                        border-radius: 12px 12px 0 0;
-                    }
-                    .modal-header .close {
-                        color: white;
-                        opacity: 0.8;
-                    }
-                    .modal-header .close:hover {
-                        opacity: 1;
-                    }
-                    .form-group {
-                        margin-bottom: 20px;
-                    }
-                    .form-control {
-                        border: 2px solid #e9ecef;
-                        border-radius: 8px;
-                        padding: 12px 15px;
-                        transition: border-color 0.3s ease;
-                    }
-                    .form-control:focus {
-                        border-color: #007bff;
-                        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-                    }
-                    .btn {
-                        padding: 12px 25px;
-                        font-weight: 600;
-                        border-radius: 8px;
-                        transition: all 0.3s ease;
-                    }
-                    .btn:hover {
-                        transform: translateY(-1px);
-                    }
-                </style>';
+                })
+                .catch(error => {
+                    alert("Error sending request. Please try again.");
+                });
+            };
+        });
+        </script>';
 
-                // JavaScript inline pour la gestion du formulaire
-                $js = '<script>
-                    // Additional JavaScript for RequestQuote module can be added here
-                </script>';
-
-                return $globalCss . $css . $js;
-            }
-        }
-
-        return $globalCss;
+        return $css . $js;
     }
 
     /**
-     * Hook: actionFrontControllerSetMedia - Add CSS and JS files
+     * Display product actions - Show quote button
      */
-    public function hookActionFrontControllerSetMedia($params)
+    public function hookDisplayProductActions($params)
     {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return;
-        }
-
-        // Only add assets on product pages
-        if ($this->context->controller->php_self == 'product') {
-            $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
-            $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
-        }
-    }
-
-    /**
-     * Hook: displayRightColumnProduct - Show quote button in right column
-     */
-    public function hookDisplayRightColumnProduct($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED') || !isset($params['product'])) {
             return '';
         }
 
-        if (isset($params['product']) && is_object($params['product'])) {
-            $product = $params['product'];
-            
-            $this->context->smarty->assign([
-                'product' => $product,
-                'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
-                'csrf_token' => Tools::getToken(false),
-                'module_dir' => $this->_path,
-                'module_name' => $this->name,
-            ]);
-
-            return $this->display(__FILE__, 'views/templates/hook/product-additional-info.tpl');
-        }
-
-        return '';
+        $product = $params['product'];
+        return '<div class="text-center">
+                    <button class="request-quote-btn" data-product-id="' . (int)$product->id . '">
+                        Request Quote
+                    </button>
+                </div>';
     }
 
     /**
-     * Hook: displayLeftColumnProduct - Show quote button in left column
-     */
-    public function hookDisplayLeftColumnProduct($params)
-    {
-        return $this->hookDisplayRightColumnProduct($params);
-    }
-
-    /**
-     * Hook: displayAfterProductThumbs - Additional product info after thumbnails
-     */
-    public function hookDisplayAfterProductThumbs($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        // Return only CSS to hide elements, no additional content here
-        return '<style>
-            .product-price,
-            .current-price,
-            .regular-price,
-            .discount-percentage,
-            .product-discounts {
-                display: none !important;
-            }
-        </style>';
-    }
-
-    /**
-     * Hook: displayProductButtons - Hide/modify product buttons
-     */
-    public function hookDisplayProductButtons($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        // Return CSS to hide pricing elements
-        return '<style>
-            .product-add-to-cart,
-            .product-variants,
-            .product-customization,
-            .product-quantity,
-            .product-price,
-            .current-price,
-            .regular-price,
-            .discount-percentage,
-            .product-discounts {
-                display: none !important;
-            }
-        </style>';
-    }
-
-    /**
-     * Hook: displayProductListFunctionalButtons - Hide buttons on product lists
-     */
-    public function hookDisplayProductListFunctionalButtons($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        // Return CSS to hide add-to-cart buttons on product lists
-        return '<style>
-            .product-add-to-cart,
-            .add-to-cart,
-            .btn-add-to-cart,
-            .product-price,
-            .price,
-            .current-price,
-            .regular-price {
-                display: none !important;
-            }
-        </style>';
-    }
-
-    /**
-     * Hook: displayProductPriceBlock - Hide price blocks
-     */
-    public function hookDisplayProductPriceBlock($params)
-    {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        return '<style>
-            .product-price,
-            .current-price,
-            .regular-price,
-            .discount-percentage,
-            .product-discounts,
-            .product-pack {
-                display: none !important;
-            }
-        </style>';
-    }
-
-
-
-
-
-    /**
-     * Hook: displayProductAdditionalInfo - Hide price and add to cart functionality
+     * Display product additional info - Alternative quote button location
      */
     public function hookDisplayProductAdditionalInfo($params)
     {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
-            return '';
-        }
-
-        // Check if product is available in params
-        if (isset($params['product']) && is_object($params['product'])) {
-            $product = $params['product'];
-            
-            // Assign template variables
-            $this->context->smarty->assign([
-                'product' => $product,
-                'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
-                'csrf_token' => Tools::getToken(false),
-                'module_dir' => $this->_path,
-                'module_name' => $this->name,
-            ]);
-
-            // Return the template
-            return $this->display(__FILE__, 'views/templates/hook/product-additional-info.tpl');
-        }
-
-        // If no product available, just return the CSS to hide elements
-        return '<style>
-            /* Hide pricing and add-to-cart elements */
-            .product-add-to-cart,
-            .product-variants,
-            .product-customization,
-            .product-prices,
-            .product-quantity,
-            .product-actions,
-            .product-price,
-            .current-price,
-            .regular-price,
-            .discount-percentage,
-            .product-discounts {
-                display: none !important;
-            }
-        </style>';
+        return $this->hookDisplayProductActions($params);
     }
 
     /**
@@ -616,11 +277,7 @@ class RequestQuote extends Module
 
         if (Tools::isSubmit('submit' . $this->name)) {
             $enabled = (int)Tools::getValue('REQUESTQUOTE_ENABLED');
-            $requirePhone = (int)Tools::getValue('REQUESTQUOTE_REQUIRE_PHONE');
-
             Configuration::updateValue('REQUESTQUOTE_ENABLED', $enabled);
-            Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', $requirePhone);
-
             $output .= $this->displayConfirmation($this->l('Settings updated successfully.'));
         }
 
@@ -632,53 +289,35 @@ class RequestQuote extends Module
      */
     public function displayForm()
     {
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
-
-        $fields_form[0]['form'] = [
-            'legend' => [
-                'title' => $this->l('Settings'),
-            ],
-            'input' => [
-                [
-                    'type' => 'switch',
-                    'label' => $this->l('Enable Quote Requests'),
-                    'name' => 'REQUESTQUOTE_ENABLED',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'active_on',
-                            'value' => true,
-                            'label' => $this->l('Enabled')
+        $form = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Settings'),
+                ],
+                'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Enable Quote Requests'),
+                        'name' => 'REQUESTQUOTE_ENABLED',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            ]
                         ],
-                        [
-                            'id' => 'active_off',
-                            'value' => false,
-                            'label' => $this->l('Disabled')
-                        ]
                     ],
                 ],
-                [
-                    'type' => 'switch',
-                    'label' => $this->l('Require Phone Number'),
-                    'name' => 'REQUESTQUOTE_REQUIRE_PHONE',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'phone_on',
-                            'value' => true,
-                            'label' => $this->l('Required')
-                        ],
-                        [
-                            'id' => 'phone_off',
-                            'value' => false,
-                            'label' => $this->l('Optional')
-                        ]
-                    ],
-                ],
-            ],
-            'submit' => [
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
+                'submit' => [
+                    'title' => $this->l('Save'),
+                    'class' => 'btn btn-default pull-right'
+                ]
             ]
         ];
 
@@ -687,88 +326,14 @@ class RequestQuote extends Module
         $helper->name_controller = $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
-        $helper->default_form_language = $default_lang;
-        $helper->allow_employee_form_lang = $default_lang;
+        $helper->default_form_language = (int)Configuration::get('PS_LANG_DEFAULT');
+        $helper->allow_employee_form_lang = (int)Configuration::get('PS_LANG_DEFAULT');
         $helper->title = $this->displayName;
         $helper->show_toolbar = true;
         $helper->toolbar_scroll = true;
         $helper->submit_action = 'submit' . $this->name;
-
         $helper->fields_value['REQUESTQUOTE_ENABLED'] = Configuration::get('REQUESTQUOTE_ENABLED');
-        $helper->fields_value['REQUESTQUOTE_REQUIRE_PHONE'] = Configuration::get('REQUESTQUOTE_REQUIRE_PHONE');
 
-        return $helper->generateForm($fields_form);
-    }
-
-    /**
-     * Récupérer les erreurs d'installation
-     */
-    public function getErrors()
-    {
-        return $this->_errors;
-    }
-
-    /**
-     * Create admin tab for managing quote requests
-     */
-    private function createAdminTab()
-    {
-        try {
-            // Check if tab already exists
-            $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
-            if ($tabId) {
-                return true; // Tab already exists
-            }
-
-            $tab = new Tab();
-            $tab->active = 1;
-            $tab->class_name = 'AdminRequestQuote';
-            $tab->name = array();
-            
-            foreach (Language::getLanguages(true) as $lang) {
-                $tab->name[$lang['id_lang']] = 'Quote Requests';
-            }
-            
-            // Try different parent locations
-            $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
-            if (!$parentId) {
-                $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
-            }
-            if (!$parentId) {
-                $parentId = 0; // Root level if no parent found
-            }
-            
-            $tab->id_parent = $parentId;
-            $tab->module = $this->name;
-            $tab->position = Tab::getNewLastPosition($parentId);
-            
-            if (!$tab->add()) {
-                $this->_errors[] = $this->l('Failed to add admin tab');
-                return false;
-            }
-            
-            return true;
-        } catch (Exception $e) {
-            $this->_errors[] = $this->l('Admin tab creation error: ') . $e->getMessage();
-            return false;
-        }
-    }
-
-    /**
-     * Remove admin tab for managing quote requests
-     */
-    private function removeAdminTab()
-    {
-        try {
-            $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
-            if ($id_tab) {
-                $tab = new Tab($id_tab);
-                return $tab->delete();
-            }
-            return true;
-        } catch (Exception $e) {
-            $this->_errors[] = $this->l('Admin tab removal error: ') . $e->getMessage();
-            return false;
-        }
+        return $helper->generateForm([$form]);
     }
 } 
