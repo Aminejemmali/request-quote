@@ -1,0 +1,591 @@
+/**
+ * Abrasif Italia - Theme Base CSS (Conflict-Free)
+ * Professional e-commerce theme for cleaning machines and industrial products
+ * 
+ * Color Palette: Red (#e31e24), Green (#28a745), White (#ffffff)
+ * Version: 1.0.0
+ * Compatible: PrestaShop 1.7+ / 8.x / 9.x
+ * 
+ * IMPORTANT: This CSS ONLY enhances PrestaShop theme elements.
+ * It does NOT touch any .request-quote-* classes to avoid conflicts.
+ * All request quote functionality is preserved as-is.
+ */
+
+/* ========================================
+   1. CSS CUSTOM PROPERTIES (VARIABLES)
+   Abrasif Italia Brand System
+======================================== */
+
+:root {
+    /* Abrasif Italia Brand Colors */
+    --abrasif-primary: #e31e24;         /* Brand Red */
+    --abrasif-primary-dark: #c41e3a;    /* Dark Red for hover states */
+    --abrasif-primary-light: #ff4757;   /* Light Red accents */
+    --abrasif-secondary: #28a745;       /* Professional Green */
+    --abrasif-secondary-dark: #1e7e34;  /* Dark Green for hover states */
+    --abrasif-secondary-light: #40c057; /* Light Green accents */
+    
+    /* Neutral Colors */
+    --abrasif-white: #ffffff;
+    --abrasif-gray-50: #f8f9fa;         /* Light backgrounds */
+    --abrasif-gray-100: #e9ecef;        /* Borders, dividers */
+    --abrasif-gray-300: #dee2e6;        /* Form borders */
+    --abrasif-gray-500: #6c757d;        /* Secondary text */
+    --abrasif-gray-700: #495057;        /* Primary text */
+    --abrasif-gray-900: #343a40;        /* Headings */
+    --abrasif-black: #000000;
+    
+    /* Typography */
+    --abrasif-font-family: 'Roboto', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    --abrasif-font-headings: 'Montserrat', 'Open Sans', Arial, sans-serif;
+    
+    /* Effects */
+    --abrasif-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --abrasif-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --abrasif-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    --abrasif-transition: all 0.15s ease-in-out;
+    --abrasif-border-radius: 0.375rem;
+    --abrasif-border-radius-lg: 0.5rem;
+}
+
+/* Font Loading Optimization */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+/* ========================================
+   2. PRESTASHOP HEADER ENHANCEMENTS
+   Only enhances existing PrestaShop classes
+======================================== */
+
+/* Top Header Bar Enhancement */
+.header-top {
+    background-color: var(--abrasif-white) !important;
+    border-bottom: 3px solid var(--abrasif-primary) !important;
+    box-shadow: var(--abrasif-shadow-sm) !important;
+}
+
+/* Main Header Navigation Enhancement */
+.header-nav {
+    background-color: var(--abrasif-white) !important;
+    box-shadow: var(--abrasif-shadow) !important;
+}
+
+/* Logo Enhancement */
+.header-nav .navbar-brand img {
+    max-height: 60px !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.header-nav .navbar-brand:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* Main Menu Enhancement */
+.main-menu,
+.js-top-menu,
+.top-menu {
+    background-color: var(--abrasif-primary) !important;
+    box-shadow: var(--abrasif-shadow) !important;
+}
+
+/* Navigation Links Enhancement */
+.main-menu .navbar-nav .nav-link,
+.js-top-menu .navbar-nav .nav-link,
+.top-menu .navbar-nav .nav-link {
+    color: var(--abrasif-white) !important;
+    font-weight: 500 !important;
+    font-family: var(--abrasif-font-headings) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 15px 20px !important;
+    transition: var(--abrasif-transition) !important;
+    position: relative !important;
+}
+
+.main-menu .navbar-nav .nav-link:hover,
+.js-top-menu .navbar-nav .nav-link:hover,
+.top-menu .navbar-nav .nav-link:hover,
+.main-menu .navbar-nav .nav-link:focus,
+.js-top-menu .navbar-nav .nav-link:focus,
+.top-menu .navbar-nav .nav-link:focus {
+    background-color: var(--abrasif-primary-dark) !important;
+    color: var(--abrasif-white) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Navigation Underline Effect */
+.main-menu .navbar-nav .nav-link::after,
+.js-top-menu .navbar-nav .nav-link::after,
+.top-menu .navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background-color: var(--abrasif-secondary);
+    transition: var(--abrasif-transition);
+    transform: translateX(-50%);
+}
+
+.main-menu .navbar-nav .nav-link:hover::after,
+.js-top-menu .navbar-nav .nav-link:hover::after,
+.top-menu .navbar-nav .nav-link:hover::after {
+    width: 80%;
+}
+
+/* Search Widget Enhancement */
+.search-widget input[type="search"],
+.search-widget input[type="text"] {
+    border: 2px solid var(--abrasif-primary) !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.search-widget input:focus {
+    border-color: var(--abrasif-secondary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+    outline: none !important;
+}
+
+.search-widget button,
+.search-widget .btn {
+    background-color: var(--abrasif-primary) !important;
+    border-color: var(--abrasif-primary) !important;
+    color: var(--abrasif-white) !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    padding: 10px 20px !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.search-widget button:hover,
+.search-widget .btn:hover {
+    background-color: var(--abrasif-primary-dark) !important;
+    border-color: var(--abrasif-primary-dark) !important;
+    transform: scale(1.05) !important;
+}
+
+/* Cart and Account Links */
+.header-nav .cart-preview,
+.header-nav .user-info,
+.header-nav .account {
+    color: var(--abrasif-primary) !important;
+    font-weight: 600 !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.header-nav .cart-preview:hover,
+.header-nav .user-info:hover,
+.header-nav .account:hover {
+    color: var(--abrasif-secondary) !important;
+    transform: scale(1.1) !important;
+}
+
+/* ========================================
+   3. PRESTASHOP PRODUCT CARDS ENHANCEMENT
+   Enhances .product-miniature without conflicts
+======================================== */
+
+/* Product Card Base Enhancement */
+.product-miniature {
+    border: 2px solid var(--abrasif-gray-100) !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    background-color: var(--abrasif-white) !important;
+    transition: var(--abrasif-transition) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    margin-bottom: 30px !important;
+}
+
+.product-miniature:hover {
+    border-color: var(--abrasif-primary) !important;
+    box-shadow: var(--abrasif-shadow-lg) !important;
+    transform: translateY(-8px) !important;
+}
+
+/* Product Thumbnail Enhancement */
+.product-miniature .thumbnail-container {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: var(--abrasif-border-radius-lg) var(--abrasif-border-radius-lg) 0 0 !important;
+}
+
+.product-miniature .product-thumbnail img {
+    width: 100% !important;
+    height: 250px !important;
+    object-fit: cover !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.product-miniature:hover .product-thumbnail img {
+    transform: scale(1.1) !important;
+}
+
+/* Product Information Overlay */
+.product-miniature .thumbnail-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(227, 30, 36, 0.8), rgba(40, 167, 69, 0.8));
+    opacity: 0;
+    transition: var(--abrasif-transition);
+}
+
+.product-miniature:hover .thumbnail-container::after {
+    opacity: 1;
+}
+
+/* COMPLETE REMOVAL OF QUICK VIEW */
+.quick-view,
+.quickview,
+.js-quick-view-btn,
+.product-quickview,
+.quick-view-btn,
+.modal-quickview,
+.product-modal,
+.product-miniature .quick-view,
+.thumbnail-container .quick-view,
+.product-thumbnail .quick-view,
+.js-product-miniature .quick-view,
+.featured-products .quick-view,
+.product-list .quick-view,
+.products .quick-view,
+.category-products .quick-view,
+.search-results .quick-view,
+.new-products .quick-view,
+.highlighted-informations .quick-view,
+.product-actions .quick-view,
+.product-functional-buttons .quick-view,
+a[data-link-action="quickview"],
+button[data-link-action="quickview"],
+.btn[data-link-action="quickview"],
+[data-toggle="modal"][href*="quickview"],
+[data-target*="quickview"],
+.modal[id*="quickview"],
+.modal-dialog[id*="quickview"],
+.product-cover-modal,
+.js-product-cover-modal,
+.product-images-modal {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Product Description Enhancement */
+.product-miniature .product-description {
+    padding: 20px !important;
+    background-color: var(--abrasif-white) !important;
+}
+
+.product-miniature .product-description .h3,
+.product-miniature .product-description h3 {
+    font-family: var(--abrasif-font-headings) !important;
+    font-weight: 600 !important;
+    color: var(--abrasif-gray-900) !important;
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.product-miniature:hover .product-description .h3,
+.product-miniature:hover .product-description h3 {
+    color: var(--abrasif-primary) !important;
+}
+
+/* Product Badges Enhancement */
+.product-miniature .highlighted-informations {
+    position: absolute !important;
+    top: 15px !important;
+    left: 15px !important;
+    z-index: 10 !important;
+}
+
+.product-miniature .highlighted-informations .new,
+.product-miniature .highlighted-informations .badge-new {
+    background-color: var(--abrasif-secondary) !important;
+    color: var(--abrasif-white) !important;
+    padding: 5px 12px !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.product-miniature .highlighted-informations .on-sale,
+.product-miniature .highlighted-informations .badge-sale {
+    background-color: var(--abrasif-primary) !important;
+    color: var(--abrasif-white) !important;
+    padding: 5px 12px !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* ========================================
+   4. PRESTASHOP BUTTON SYSTEM ENHANCEMENT
+   Enhances existing .btn classes only
+======================================== */
+
+/* Primary Buttons Enhancement */
+.btn-primary {
+    background-color: var(--abrasif-primary) !important;
+    border-color: var(--abrasif-primary) !important;
+    color: var(--abrasif-white) !important;
+    font-weight: 600 !important;
+    font-family: var(--abrasif-font-headings) !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    padding: 10px 25px !important;
+    transition: var(--abrasif-transition) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--abrasif-primary-dark) !important;
+    border-color: var(--abrasif-primary-dark) !important;
+    color: var(--abrasif-white) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--abrasif-shadow) !important;
+}
+
+/* Secondary Buttons Enhancement */
+.btn-secondary {
+    background-color: var(--abrasif-secondary) !important;
+    border-color: var(--abrasif-secondary) !important;
+    color: var(--abrasif-white) !important;
+    font-weight: 600 !important;
+    font-family: var(--abrasif-font-headings) !important;
+    border-radius: var(--abrasif-border-radius-lg) !important;
+    padding: 10px 25px !important;
+    transition: var(--abrasif-transition) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: var(--abrasif-secondary-dark) !important;
+    border-color: var(--abrasif-secondary-dark) !important;
+    color: var(--abrasif-white) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--abrasif-shadow) !important;
+}
+
+/* ========================================
+   5. PRESTASHOP FOOTER ENHANCEMENT
+   Works with existing .footer-container structure
+======================================== */
+
+.footer-container {
+    background: linear-gradient(135deg, var(--abrasif-gray-900), var(--abrasif-black)) !important;
+    color: var(--abrasif-white) !important;
+    padding: 40px 0 20px 0 !important;
+    margin-top: 50px !important;
+    position: relative !important;
+}
+
+.footer-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--abrasif-primary), var(--abrasif-secondary));
+}
+
+.footer-container .footer-top {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding-bottom: 30px !important;
+    margin-bottom: 20px !important;
+}
+
+.footer-container h3,
+.footer-container .h3 {
+    color: var(--abrasif-primary) !important;
+    font-family: var(--abrasif-font-headings) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 15px !important;
+}
+
+.footer-container a {
+    color: var(--abrasif-white) !important;
+    text-decoration: none !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.footer-container a:hover {
+    color: var(--abrasif-secondary) !important;
+    text-decoration: none !important;
+}
+
+.footer-container .footer-bottom {
+    text-align: center !important;
+    font-size: 14px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ========================================
+   6. PRESTASHOP FORM ENHANCEMENTS
+   Works with existing form classes
+======================================== */
+
+/* Form Controls Enhancement */
+.form-control {
+    border: 2px solid var(--abrasif-gray-300) !important;
+    border-radius: var(--abrasif-border-radius) !important;
+    padding: 12px 15px !important;
+    font-size: 14px !important;
+    font-family: var(--abrasif-font-family) !important;
+    transition: var(--abrasif-transition) !important;
+}
+
+.form-control:focus {
+    border-color: var(--abrasif-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(227, 30, 36, 0.25) !important;
+    outline: none !important;
+}
+
+.form-control:valid {
+    border-color: var(--abrasif-secondary) !important;
+}
+
+/* Form Labels */
+.form-control-label,
+.form-label {
+    font-weight: 600 !important;
+    color: var(--abrasif-gray-700) !important;
+    margin-bottom: 8px !important;
+    font-family: var(--abrasif-font-headings) !important;
+}
+
+/* ========================================
+   7. RESPONSIVE DESIGN
+   Compatible with PrestaShop's Bootstrap grid
+======================================== */
+
+/* Tablet Styles */
+@media (max-width: 768px) {
+    .header-nav .navbar-brand img {
+        max-height: 45px !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    .product-miniature .product-thumbnail img {
+        height: 200px !important;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 576px) {
+    .header-nav .navbar-brand img {
+        max-height: 40px !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .product-miniature {
+        margin-bottom: 20px !important;
+    }
+    
+    .product-miniature .product-thumbnail img {
+        height: 180px !important;
+    }
+    
+    .product-miniature .product-description {
+        padding: 15px !important;
+    }
+}
+
+/* ========================================
+   8. ABRASIF ITALIA UTILITY CLASSES
+   Brand-specific utility classes
+======================================== */
+
+/* Text Colors */
+.text-abrasif-primary { color: var(--abrasif-primary) !important; }
+.text-abrasif-secondary { color: var(--abrasif-secondary) !important; }
+.text-abrasif-white { color: var(--abrasif-white) !important; }
+
+/* Background Colors */
+.bg-abrasif-primary { background-color: var(--abrasif-primary) !important; }
+.bg-abrasif-secondary { background-color: var(--abrasif-secondary) !important; }
+.bg-abrasif-white { background-color: var(--abrasif-white) !important; }
+
+/* Shadow Utilities */
+.shadow-abrasif-sm { box-shadow: var(--abrasif-shadow-sm) !important; }
+.shadow-abrasif { box-shadow: var(--abrasif-shadow) !important; }
+.shadow-abrasif-lg { box-shadow: var(--abrasif-shadow-lg) !important; }
+
+/* Transition Utility */
+.transition-abrasif { transition: var(--abrasif-transition) !important; }
+
+/* ========================================
+   9. PRINT STYLES
+======================================== */
+
+@media print {
+    .header-nav,
+    .main-menu,
+    .js-top-menu,
+    .footer-container {
+        display: none !important;
+    }
+    
+    .product-miniature {
+        break-inside: avoid !important;
+        border: 1px solid #000 !important;
+        margin-bottom: 20px !important;
+    }
+    
+    body {
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+        color: #000 !important;
+        font-family: serif !important;
+    }
+}
+
+/* ========================================
+   10. BROWSER COMPATIBILITY
+======================================== */
+
+/* Fallback for older browsers */
+@supports not (display: grid) {
+    .product-miniature {
+        float: left !important;
+        width: calc(33.333% - 20px) !important;
+        margin-right: 20px !important;
+    }
+}
+
+/* ========================================
+   END ABRASIF ITALIA THEME BASE CSS
+   
+   This CSS enhances PrestaShop's existing structure
+   without touching any request-quote classes.
+   All request quote functionality is preserved.
+======================================== */ 
