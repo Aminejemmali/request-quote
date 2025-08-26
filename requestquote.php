@@ -45,6 +45,17 @@ class RequestQuote extends Module
      */
     public function install()
     {
+        // Vérifier les prérequis AVANT tout
+        if (!$this->checkRequirements()) {
+            return false;
+        }
+
+        // Appeler parent::install() EN PREMIER
+        if (!parent::install()) {
+            $this->_errors[] = $this->l('Failed to install parent module');
+            return false;
+        }
+
         // Check if PrestaShop version is compatible
         if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
@@ -52,6 +63,7 @@ class RequestQuote extends Module
 
         // Create database table for quote requests
         if (!$this->createQuoteRequestsTable()) {
+            $this->uninstall();
             return false;
         }
 
@@ -64,15 +76,50 @@ class RequestQuote extends Module
 
         foreach ($hooks as $hook) {
             if (!$this->registerHook($hook)) {
+                $this->_errors[] = $this->l('Failed to register hook: ') . $hook;
+                $this->uninstall();
                 return false;
             }
         }
 
         // Set default configuration
-        Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
-        Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0);
+        if (!Configuration::updateValue('REQUESTQUOTE_ENABLED', 1) ||
+            !Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0)) {
+            $this->_errors[] = $this->l('Failed to set default configuration');
+            $this->uninstall();
+            return false;
+        }
 
-        return parent::install();
+        return true;
+    }
+
+    /**
+     * Vérifier les prérequis système
+     */
+    private function checkRequirements()
+    {
+        // Vérifier la version PHP
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            $this->_errors[] = $this->l('PHP 8.0 or higher is required. Current version: ') . PHP_VERSION;
+            return false;
+        }
+
+        // Vérifier la version PrestaShop
+        if (version_compare(_PS_VERSION_, '9.0.0', '<')) {
+            $this->_errors[] = $this->l('PrestaShop 9.0.0 or higher is required. Current version: ') . _PS_VERSION_;
+            return false;
+        }
+
+        // Vérifier les extensions PHP requises
+        $required_extensions = ['pdo', 'pdo_mysql', 'json'];
+        foreach ($required_extensions as $ext) {
+            if (!extension_loaded($ext)) {
+                $this->_errors[] = $this->l('PHP extension required: ') . $ext;
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -81,14 +128,24 @@ class RequestQuote extends Module
      */
     public function uninstall()
     {
-        // Remove database table
-        $this->dropQuoteRequestsTable();
+        try {
+            // Remove database table
+            if (!$this->dropQuoteRequestsTable()) {
+                $this->_errors[] = $this->l('Failed to drop database table');
+            }
 
-        // Remove configuration values
-        Configuration::deleteByName('REQUESTQUOTE_ENABLED');
-        Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE');
+            // Remove configuration values
+            if (!Configuration::deleteByName('REQUESTQUOTE_ENABLED') ||
+                !Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE')) {
+                $this->_errors[] = $this->l('Failed to remove configuration values');
+            }
 
-        return parent::uninstall();
+            // Appeler parent::uninstall() en dernier
+            return parent::uninstall();
+        } catch (Exception $e) {
+            $this->_errors[] = $this->l('Uninstall error: ') . $e->getMessage();
+            return false;
+        }
     }
 
     /**
@@ -96,8 +153,20 @@ class RequestQuote extends Module
      */
     private function dropQuoteRequestsTable()
     {
-        $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`';
-        return Db::getInstance()->execute($sql);
+        try {
+            $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`';
+            $result = Db::getInstance()->execute($sql);
+            
+            if (!$result) {
+                $this->_errors[] = $this->l('Failed to drop database table: ') . Db::getInstance()->getMsgError();
+                return false;
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->_errors[] = $this->l('Database table drop error: ') . $e->getMessage();
+            return false;
+        }
     }
 
     /**
@@ -105,22 +174,34 @@ class RequestQuote extends Module
      */
     private function createQuoteRequestsTable()
     {
-        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
-            `id_quote` int(11) NOT NULL AUTO_INCREMENT,
-            `id_product` int(11) NOT NULL,
-            `id_shop` int(11) NOT NULL DEFAULT 1,
-            `client_name` varchar(255) NOT NULL,
-            `email` varchar(255) NOT NULL,
-            `phone` varchar(50) DEFAULT NULL,
-            `note` text DEFAULT NULL,
-            `date_add` datetime NOT NULL,
-            `date_upd` datetime NOT NULL,
-            PRIMARY KEY (`id_quote`),
-            KEY `id_product` (`id_product`),
-            KEY `id_shop` (`id_shop`)
-        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+        try {
+            $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
+                `id_quote` int(11) NOT NULL AUTO_INCREMENT,
+                `id_product` int(11) NOT NULL,
+                `id_shop` int(11) NOT NULL DEFAULT 1,
+                `client_name` varchar(255) NOT NULL,
+                `email` varchar(255) NOT NULL,
+                `phone` varchar(50) DEFAULT NULL,
+                `note` text DEFAULT NULL,
+                `date_add` datetime NOT NULL,
+                `date_upd` datetime NOT NULL,
+                PRIMARY KEY (`id_quote`),
+                KEY `id_product` (`id_product`),
+                KEY `id_shop` (`id_shop`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;';
 
-        return Db::getInstance()->execute($sql);
+            $result = Db::getInstance()->execute($sql);
+            
+            if (!$result) {
+                $this->_errors[] = $this->l('Failed to create database table: ') . Db::getInstance()->getMsgError();
+                return false;
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->_errors[] = $this->l('Database table creation error: ') . $e->getMessage();
+            return false;
+        }
     }
 
 
@@ -442,5 +523,13 @@ class RequestQuote extends Module
         $helper->fields_value['REQUESTQUOTE_REQUIRE_PHONE'] = Configuration::get('REQUESTQUOTE_REQUIRE_PHONE');
 
         return $helper->generateForm($fields_form);
+    }
+
+    /**
+     * Récupérer les erreurs d'installation
+     */
+    public function getErrors()
+    {
+        return $this->_errors;
     }
 } 
