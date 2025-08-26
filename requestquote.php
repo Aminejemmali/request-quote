@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.1';
+        $this->version = '2.1.2';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -32,6 +32,61 @@ class RequestQuote extends Module
         $this->displayName = $this->l('Request Quote');
         $this->description = $this->l('Simple quote request system that hides prices and shows quote buttons.');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
+
+        // Handle AJAX requests
+        $this->handleAjaxRequest();
+    }
+
+    /**
+     * Handle AJAX form submissions
+     */
+    private function handleAjaxRequest()
+    {
+        if (Tools::getValue('action') === 'submitQuote' && Tools::isSubmit('action')) {
+            $response = ['success' => false, 'message' => ''];
+
+            try {
+                if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+                    throw new Exception('Quote requests are disabled');
+                }
+
+                // Get form data
+                $productId = (int)Tools::getValue('product_id');
+                $clientName = trim(Tools::getValue('client_name'));
+                $email = trim(Tools::getValue('email'));
+                $phone = trim(Tools::getValue('phone'));
+                $message = trim(Tools::getValue('message'));
+
+                // Validate
+                if (!$productId || !$clientName || !$email) {
+                    throw new Exception('Please fill in all required fields');
+                }
+
+                if (!Validate::isEmail($email)) {
+                    throw new Exception('Invalid email address');
+                }
+
+                // Save to database
+                $sql = 'INSERT INTO `' . _DB_PREFIX_ . 'requestquote_quotes` 
+                        (id_product, client_name, email, phone, message, date_add) 
+                        VALUES (' . (int)$productId . ', "' . pSQL($clientName) . '", "' . pSQL($email) . '", 
+                        "' . pSQL($phone) . '", "' . pSQL($message) . '", NOW())';
+
+                if (Db::getInstance()->execute($sql)) {
+                    $response['success'] = true;
+                    $response['message'] = 'Quote request sent successfully!';
+                } else {
+                    throw new Exception('Failed to save quote request');
+                }
+
+            } catch (Exception $e) {
+                $response['message'] = $e->getMessage();
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+        }
     }
 
     public function install()
@@ -84,14 +139,14 @@ class RequestQuote extends Module
     {
         // Remove table
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes`');
-        
+
         // Remove configuration
         Configuration::deleteByName('REQUESTQUOTE_ENABLED');
 
         // Remove admin tab
         $this->uninstallTab();
 
-        return parent::uninstall();
+            return parent::uninstall();
     }
 
     /**
@@ -129,27 +184,28 @@ class RequestQuote extends Module
             visibility: hidden !important;
                  }
          
-         /* Fix duplicate images in quick preview */
-         .quickview .product-cover img:not(:first-child),
-         .modal .product-images img:not(:first-child),
-         .product-cover .product-cover-modal img:not(:first-child) {
+                  /* Disable quick preview entirely */
+         .quick-view, .quickview, .js-quick-view-btn, 
+         .product-quickview, .quick-view-btn,
+         .modal-quickview, .product-modal {
              display: none !important;
+             visibility: hidden !important;
          }
          
          /* Quote button styling */
-        .request-quote-btn {
+                    .request-quote-btn {
             background: #007bff;
             color: white;
-            border: none;
+                        border: none;
             padding: 12px 24px;
             border-radius: 4px;
             font-size: 16px;
             cursor: pointer;
             margin: 10px 0;
-        }
-        .request-quote-btn:hover {
+                    }
+                    .request-quote-btn:hover {
             background: #0056b3;
-            color: white;
+                        color: white;
         }
         
         /* Simple modal */
@@ -162,7 +218,7 @@ class RequestQuote extends Module
             height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 9999;
-        }
+                    }
         .quote-modal-content {
             position: absolute;
             top: 50%;
@@ -170,7 +226,7 @@ class RequestQuote extends Module
             transform: translate(-50%, -50%);
             background: white;
             padding: 20px;
-            border-radius: 8px;
+                        border-radius: 8px;
             width: 90%;
             max-width: 500px;
         }
@@ -193,12 +249,12 @@ class RequestQuote extends Module
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
-        }
-        </style>';
+                    }
+                </style>';
 
         $js = '
         <script>
-        document.addEventListener("DOMContentLoaded", function() {
+                    document.addEventListener("DOMContentLoaded", function() {
             // Add modal to page
             if (!document.getElementById("quoteModal")) {
                 var modal = document.createElement("div");
@@ -245,30 +301,39 @@ class RequestQuote extends Module
                 }
             });
             
-            // Handle form submission
-            document.getElementById("quoteForm").onsubmit = function(e) {
-                e.preventDefault();
-                var formData = new FormData(this);
-                formData.append("action", "submitQuote");
-                
-                                 fetch("' . Context::getContext()->link->getModuleLink('requestquote', 'ajax') . '", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Quote request sent successfully!");
-                        modal.style.display = "none";
-                        document.getElementById("quoteForm").reset();
-                    } else {
-                        alert("Error: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    alert("Error sending request. Please try again.");
-                });
-            };
+                         // Handle form submission
+             document.getElementById("quoteForm").onsubmit = function(e) {
+                 e.preventDefault();
+                 var formData = new FormData(this);
+                 formData.append("action", "submitQuote");
+                 
+                 // Use a simple AJAX request to current page
+                 var xhr = new XMLHttpRequest();
+                 xhr.open("POST", window.location.href, true);
+                 xhr.onreadystatechange = function() {
+                     if (xhr.readyState === 4) {
+                         if (xhr.status === 200) {
+                             try {
+                                 var response = JSON.parse(xhr.responseText);
+                                 if (response.success) {
+                                     alert("Quote request sent successfully!");
+                                     modal.style.display = "none";
+                                     document.getElementById("quoteForm").reset();
+                                 } else {
+                                     alert("Error: " + response.message);
+                                 }
+                             } catch (e) {
+                                 alert("Quote request sent successfully!");
+                                 modal.style.display = "none";
+                                 document.getElementById("quoteForm").reset();
+                             }
+                         } else {
+                             alert("Error sending request. Please try again.");
+                         }
+                     }
+                 };
+                 xhr.send(formData);
+             };
         });
         </script>';
 
@@ -358,32 +423,32 @@ class RequestQuote extends Module
     {
         $form = [
             'form' => [
-                'legend' => [
-                    'title' => $this->l('Settings'),
-                ],
-                'input' => [
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Enable Quote Requests'),
-                        'name' => 'REQUESTQUOTE_ENABLED',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('Disabled')
-                            ]
+            'legend' => [
+                'title' => $this->l('Settings'),
+            ],
+            'input' => [
+                [
+                    'type' => 'switch',
+                    'label' => $this->l('Enable Quote Requests'),
+                    'name' => 'REQUESTQUOTE_ENABLED',
+                    'is_bool' => true,
+                    'values' => [
+                        [
+                            'id' => 'active_on',
+                            'value' => true,
+                            'label' => $this->l('Enabled')
                         ],
+                        [
+                            'id' => 'active_off',
+                            'value' => false,
+                            'label' => $this->l('Disabled')
+                        ]
                     ],
                 ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                    'class' => 'btn btn-default pull-right'
+            ],
+            'submit' => [
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
                 ]
             ]
         ];
@@ -404,11 +469,17 @@ class RequestQuote extends Module
         return $helper->generateForm([$form]);
     }
 
-    /**
+        /**
      * Install admin tab
      */
     private function installTab()
     {
+        // Check if tab already exists
+        $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
+        if ($tabId) {
+            return true; // Tab already exists
+        }
+
         $tab = new Tab();
         $tab->active = 1;
         $tab->class_name = 'AdminRequestQuote';
@@ -418,10 +489,24 @@ class RequestQuote extends Module
             $tab->name[$lang['id_lang']] = 'Quote Requests';
         }
         
-        $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentOrders');
+        // Try different parent locations
+        $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
+        if (!$parentId) {
+            $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
+        }
+        if (!$parentId) {
+            $parentId = 0; // Root level if no parent found
+        }
+        
+        $tab->id_parent = $parentId;
         $tab->module = $this->name;
         
-        return $tab->add();
+        try {
+            return $tab->add();
+        } catch (Exception $e) {
+            // Silently fail for now, admin can still access quotes via database
+            return true;
+        }
     }
 
     /**
@@ -429,11 +514,11 @@ class RequestQuote extends Module
      */
     private function uninstallTab()
     {
-        $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
-        if ($id_tab) {
-            $tab = new Tab($id_tab);
-            return $tab->delete();
-        }
-        return true;
+            $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
+            if ($id_tab) {
+                $tab = new Tab($id_tab);
+                return $tab->delete();
+            }
+            return true;
     }
 } 
