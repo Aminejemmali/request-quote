@@ -18,7 +18,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '2.1.0';
+        $this->version = '2.1.1';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -61,6 +61,8 @@ class RequestQuote extends Module
             'displayHeader',
             'displayProductActions',
             'displayProductAdditionalInfo',
+            'displayProductListFunctionalButtons',
+            'displayProductPriceBlock',
         ];
 
         foreach ($hooks as $hook) {
@@ -72,6 +74,9 @@ class RequestQuote extends Module
         // Set configuration
         Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
 
+        // Create admin tab
+        $this->installTab();
+
         return true;
     }
 
@@ -82,6 +87,9 @@ class RequestQuote extends Module
         
         // Remove configuration
         Configuration::deleteByName('REQUESTQUOTE_ENABLED');
+
+        // Remove admin tab
+        $this->uninstallTab();
 
         return parent::uninstall();
     }
@@ -97,14 +105,38 @@ class RequestQuote extends Module
 
         $css = '
         <style>
-        /* Hide prices and add to cart */
+        /* Hide ALL prices and add to cart across ALL pages */
         .product-price, .current-price, .regular-price, .discount-percentage,
         .product-add-to-cart, .add-to-cart, .btn-add-to-cart,
-        .product-quantity, .product-variants, .product-customization {
+        .product-quantity, .product-variants, .product-customization,
+        .price, .prices, .product-price-and-shipping,
+        .product-miniature .price, .product-list-item .price,
+        .thumbnail-container .price, .product-thumbnail .price,
+        .quickview .price, .modal .price,
+        .product-list .price, .products .price,
+        .featured-products .price, .new-products .price,
+        .category-products .price, .search-results .price,
+        .js-product-price, .product-price-block,
+        .discount, .discount-amount, .discount-rule,
+        .unit-price, .unit-price-ratio,
+        .has-discount .regular-price,
+        .product-discount, .product-reduction,
+        .price-drop, .on-sale,
+        .our_price_display, .old_price,
+        .reduction_percent, .reduction_amount,
+        span[itemprop="price"], span[itemprop="lowPrice"], span[itemprop="highPrice"] {
             display: none !important;
-        }
-        
-        /* Quote button styling */
+            visibility: hidden !important;
+                 }
+         
+         /* Fix duplicate images in quick preview */
+         .quickview .product-cover img:not(:first-child),
+         .modal .product-images img:not(:first-child),
+         .product-cover .product-cover-modal img:not(:first-child) {
+             display: none !important;
+         }
+         
+         /* Quote button styling */
         .request-quote-btn {
             background: #007bff;
             color: white;
@@ -219,7 +251,7 @@ class RequestQuote extends Module
                 var formData = new FormData(this);
                 formData.append("action", "submitQuote");
                 
-                fetch("' . $this->context->link->getModuleLink('requestquote', 'ajax') . '", {
+                                 fetch("' . Context::getContext()->link->getModuleLink('requestquote', 'ajax') . '", {
                     method: "POST",
                     body: formData
                 })
@@ -266,6 +298,41 @@ class RequestQuote extends Module
     public function hookDisplayProductAdditionalInfo($params)
     {
         return $this->hookDisplayProductActions($params);
+    }
+
+    /**
+     * Display product list functional buttons - Show quote button on product lists
+     */
+    public function hookDisplayProductListFunctionalButtons($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED') || !isset($params['product'])) {
+            return '';
+        }
+
+        $product = $params['product'];
+        return '<div class="product-actions-main">
+                    <button class="request-quote-btn" data-product-id="' . (int)$product['id_product'] . '">
+                        Request Quote
+                    </button>
+                </div>';
+    }
+
+    /**
+     * Display product price block - Hide prices everywhere
+     */
+    public function hookDisplayProductPriceBlock($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        return '<style>
+            .product-price, .current-price, .regular-price, .discount-percentage,
+            .price, .prices, .product-price-and-shipping {
+                display: none !important;
+                visibility: hidden !important;
+            }
+        </style>';
     }
 
     /**
@@ -335,5 +402,38 @@ class RequestQuote extends Module
         $helper->fields_value['REQUESTQUOTE_ENABLED'] = Configuration::get('REQUESTQUOTE_ENABLED');
 
         return $helper->generateForm([$form]);
+    }
+
+    /**
+     * Install admin tab
+     */
+    private function installTab()
+    {
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminRequestQuote';
+        $tab->name = array();
+        
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = 'Quote Requests';
+        }
+        
+        $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentOrders');
+        $tab->module = $this->name;
+        
+        return $tab->add();
+    }
+
+    /**
+     * Uninstall admin tab
+     */
+    private function uninstallTab()
+    {
+        $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            return $tab->delete();
+        }
+        return true;
     }
 } 

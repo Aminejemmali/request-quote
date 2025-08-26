@@ -1,7 +1,6 @@
 <?php
 /**
- * Admin Controller for Managing Quote Requests
- * Provides a grid interface to view and manage all quote requests
+ * Simple Admin Controller for Quote Requests
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -10,9 +9,6 @@ if (!defined('_PS_VERSION_')) {
 
 class AdminRequestQuoteController extends ModuleAdminController
 {
-    /**
-     * Initialize controller
-     */
     public function __construct()
     {
         $this->bootstrap = true;
@@ -21,7 +17,47 @@ class AdminRequestQuoteController extends ModuleAdminController
         $this->identifier = 'id_quote';
         $this->lang = false;
         $this->deleted = false;
-        $this->colorOnBackground = false;
+
+        parent::__construct();
+
+        $this->meta_title = $this->l('Quote Requests');
+
+        // Define list fields
+        $this->fields_list = [
+            'id_quote' => [
+                'title' => $this->l('ID'),
+                'align' => 'center',
+                'class' => 'fixed-width-xs',
+            ],
+            'client_name' => [
+                'title' => $this->l('Client Name'),
+                'align' => 'left',
+            ],
+            'email' => [
+                'title' => $this->l('Email'),
+                'align' => 'left',
+            ],
+            'phone' => [
+                'title' => $this->l('Phone'),
+                'align' => 'left',
+            ],
+            'product_name' => [
+                'title' => $this->l('Product'),
+                'align' => 'left',
+                'callback' => 'getProductName',
+            ],
+            'message' => [
+                'title' => $this->l('Message'),
+                'align' => 'left',
+                'maxlength' => 50,
+            ],
+            'date_add' => [
+                'title' => $this->l('Date'),
+                'align' => 'right',
+                'type' => 'datetime',
+            ],
+        ];
+
         $this->bulk_actions = [
             'delete' => [
                 'text' => $this->l('Delete selected'),
@@ -30,201 +66,75 @@ class AdminRequestQuoteController extends ModuleAdminController
             ]
         ];
 
-        parent::__construct();
-
-        $this->meta_title = $this->l('Quote Requests');
-        $this->page_title = $this->l('Quote Requests');
-
-        // Set fields list for the grid
-        $this->fields_list = [
-            'id_quote' => [
-                'title' => $this->l('ID'),
-                'align' => 'center',
-                'class' => 'fixed-width-xs',
-                'search' => false,
-            ],
-            'product_name' => [
-                'title' => $this->l('Product'),
-                'align' => 'left',
-                'search' => true,
-                'callback' => 'getProductName',
-            ],
-            'client_name' => [
-                'title' => $this->l('Client Name'),
-                'align' => 'left',
-                'search' => true,
-            ],
-            'email' => [
-                'title' => $this->l('Email'),
-                'align' => 'left',
-                'search' => true,
-            ],
-            'phone' => [
-                'title' => $this->l('Phone'),
-                'align' => 'left',
-                'search' => true,
-            ],
-            'note' => [
-                'title' => $this->l('Note'),
-                'align' => 'left',
-                'search' => true,
-                'maxlength' => 50,
-                'callback' => 'truncateNote',
-            ],
-            'date_add' => [
-                'title' => $this->l('Date Added'),
-                'align' => 'right',
-                'type' => 'datetime',
-                'search' => true,
-            ],
-        ];
-
-        // Set default order
-        $this->_orderBy = 'date_add';
-        $this->_orderWay = 'DESC';
-
-        // Add filters
-        $this->_filter = true;
-        $this->_default_pagination = 25;
-        $this->_pagination = [25, 50, 100];
+        $this->actions = ['view', 'delete'];
     }
 
-    /**
-     * Get product name for display
-     */
-    public function getProductName($productId, $tr)
+    public function getProductName($id_product)
     {
-        $product = new Product($productId, false, $this->context->language->id);
-        return $product->name ?: 'Product #' . $productId;
-    }
-
-    /**
-     * Truncate note text for display
-     */
-    public function truncateNote($note, $tr)
-    {
-        if (strlen($note) > 50) {
-            return Tools::substr($note, 0, 47) . '...';
+        if (!$id_product) {
+            return '-';
         }
-        return $note;
+
+        $product = new Product((int)$id_product, false, $this->context->language->id);
+        return $product->name ?: $this->l('Unknown Product');
     }
 
-    /**
-     * Override getList to join with product table
-     */
-    public function getList($id_lang, $order_by = null, $order_way = null, $filter = 0, $nb = 0)
-    {
-        parent::getList($id_lang, $order_by, $order_way, $filter, $nb);
-
-        // Join with product table to get product names
-        if (isset($this->_list) && is_array($this->_list)) {
-            foreach ($this->_list as &$item) {
-                $item['product_name'] = $this->getProductName($item['id_product'], null);
-            }
-        }
-    }
-
-    /**
-     * Override renderList to add custom SQL
-     */
     public function renderList()
     {
-        // Add custom SQL to join with product table
-        $this->_select = 'q.*, p.name as product_name';
-        $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` p ON (q.id_product = p.id_product AND p.id_lang = ' . (int)$this->context->language->id . ')';
-        $this->_where = 'AND q.id_shop = ' . (int)$this->context->shop->id;
+        // Add custom SQL to join with product table for better display
+        $this->_select = 'p.name as product_name';
+        $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` p ON (a.id_product = p.id_product AND p.id_lang = ' . (int)$this->context->language->id . ')';
 
         return parent::renderList();
     }
 
-    /**
-     * Override renderView to show full quote details
-     */
     public function renderView()
     {
-        $quote = new RequestQuoteQuote(Tools::getValue('id_quote'));
+        $id_quote = (int)Tools::getValue('id_quote');
         
-        if (!Validate::isLoadedObject($quote)) {
-            $this->errors[] = $this->l('Quote not found.');
-            return;
+        if (!$id_quote) {
+            $this->errors[] = $this->l('Quote not found');
+            return $this->renderList();
         }
 
-        $product = new Product($quote->id_product, false, $this->context->language->id);
+        // Get quote data
+        $sql = 'SELECT q.*, p.name as product_name 
+                FROM `' . _DB_PREFIX_ . 'requestquote_quotes` q
+                LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` p ON (q.id_product = p.id_product AND p.id_lang = ' . (int)$this->context->language->id . ')
+                WHERE q.id_quote = ' . (int)$id_quote;
         
-        $this->tpl_view_vars = [
+        $quote = Db::getInstance()->getRow($sql);
+        
+        if (!$quote) {
+            $this->errors[] = $this->l('Quote not found');
+            return $this->renderList();
+        }
+
+        $this->context->smarty->assign([
             'quote' => $quote,
-            'product' => $product,
-            'shop_name' => Shop::getShop($quote->id_shop)['name'],
-        ];
+            'back_url' => $this->context->link->getAdminLink('AdminRequestQuote'),
+        ]);
 
-        return parent::renderView();
+        return $this->createTemplate('quote_view.tpl')->fetch();
     }
 
-    /**
-     * Override processDelete to add confirmation
-     */
-    public function processDelete()
+    public function postProcess()
     {
-        if (Tools::isSubmit('delete' . $this->table)) {
-            $id_quote = (int)Tools::getValue($this->identifier);
-            $quote = new RequestQuoteQuote($id_quote);
-            
-            if (Validate::isLoadedObject($quote)) {
-                if ($quote->delete()) {
-                    $this->confirmations[] = $this->l('Quote request deleted successfully.');
-                } else {
-                    $this->errors[] = $this->l('Failed to delete quote request.');
+        if (Tools::isSubmit('deleteSelection')) {
+            $selection = Tools::getValue('requestquote_quotesBox');
+            if (is_array($selection) && count($selection)) {
+                foreach ($selection as $id_quote) {
+                    $this->deleteQuote((int)$id_quote);
                 }
-            } else {
-                $this->errors[] = $this->l('Quote request not found.');
+                $this->confirmations[] = $this->l('Selected quotes deleted successfully.');
             }
         }
+
+        return parent::postProcess();
     }
 
-    /**
-     * Override processBulkDelete
-     */
-    public function processBulkDelete()
+    protected function deleteQuote($id_quote)
     {
-        if (is_array($this->boxes) && !empty($this->boxes)) {
-            $deleted = 0;
-            foreach ($this->boxes as $id_quote) {
-                $quote = new RequestQuoteQuote((int)$id_quote);
-                if (Validate::isLoadedObject($quote) && $quote->delete()) {
-                    $deleted++;
-                }
-            }
-            
-            if ($deleted > 0) {
-                $this->confirmations[] = sprintf($this->l('%d quote request(s) deleted successfully.'), $deleted);
-            }
-        }
-    }
-
-    /**
-     * Add custom actions to the grid
-     */
-    public function displayViewLink($token, $id, $name = null)
-    {
-        $quote = new RequestQuoteQuote($id);
-        if (Validate::isLoadedObject($quote)) {
-            $href = self::$currentIndex . '&' . $this->identifier . '=' . $id . '&view' . $this->table . '&token=' . ($token ? $token : $this->token);
-            return '<a href="' . $href . '" class="btn btn-default" title="' . $this->l('View') . '"><i class="icon-eye"></i> ' . $this->l('View') . '</a>';
-        }
-        return '';
-    }
-
-    /**
-     * Override getFieldsValue to handle custom fields
-     */
-    public function getFieldsValue($obj)
-    {
-        $fields_value = parent::getFieldsValue($obj);
-        
-        if (isset($obj->id_quote) && $obj->id_quote) {
-            $fields_value['product_name'] = $this->getProductName($obj->id_product, null);
-        }
-        
-        return $fields_value;
+        return Db::getInstance()->delete('requestquote_quotes', 'id_quote = ' . (int)$id_quote);
     }
 } 
