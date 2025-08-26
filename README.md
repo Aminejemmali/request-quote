@@ -186,7 +186,14 @@ This module is released under the MIT License. See the license file for details.
 
 ## 🔄 Version History
 
-### Version 2.0.1 (Latest)
+### Version 2.0.2 (Latest)
+- **HOTFIX**: Fixed "Cannot redeclare" compile errors caused by duplicate methods
+- **HOTFIX**: Removed duplicate hookDisplayAfterProductThumbs() method
+- **HOTFIX**: Removed duplicate hookDisplayProductButtons() method
+- **HOTFIX**: Removed duplicate hookDisplayProductListFunctionalButtons() method
+- Improved code organization and structure
+
+### Version 2.0.1
 - **HOTFIX**: Fixed missing hook methods causing "Reset is impossible" error
 - **HOTFIX**: Fixed `hookDisplayProductTab` and `hookDisplayProductTabContent` missing methods
 - Cleaned up duplicate hook implementations
