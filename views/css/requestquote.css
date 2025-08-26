@@ -1,318 +1,717 @@
 /**
- * RequestQuote Module CSS Styles
- * Styles for quote request functionality on product pages
+ * RequestQuote Module CSS Styles - Updated for Professional Theme
+ * Conflict-free styles for quote request functionality
+ * Namespace: .request-quote-*
  */
 
-/* Quote Request Section */
+/* ========================================
+   QUOTE REQUEST VARIABLES
+======================================== */
+
 .request-quote-section {
-    margin: 20px 0;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    --quote-primary: #007bff;
+    --quote-primary-hover: #0056b3;
+    --quote-success: #28a745;
+    --quote-danger: #dc3545;
+    --quote-warning: #ffc107;
+    --quote-light: #f8f9fa;
+    --quote-dark: #343a40;
+    --quote-border: #e9ecef;
+    --quote-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --quote-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ========================================
+   QUOTE REQUEST SECTION STYLING
+======================================== */
+
+.request-quote-section {
+    margin: 25px 0;
+    padding: 25px;
+    background: linear-gradient(135deg, var(--quote-light) 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 1px solid var(--quote-border);
+    box-shadow: var(--quote-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.request-quote-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--quote-primary) 0%, var(--quote-success) 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.request-quote-section .section-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.request-quote-section .section-title {
+    color: var(--quote-dark);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.request-quote-section .section-subtitle {
+    color: var(--quote-dark);
+    opacity: 0.8;
+    font-size: 1rem;
+}
+
+/* ========================================
+   QUOTE REQUEST BUTTON STYLING
+======================================== */
 
 .request-quote-button-wrapper {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .request-quote-btn {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--quote-primary) 0%, var(--quote-primary-hover) 100%);
     border: none;
-    padding: 15px 30px;
-    font-size: 18px;
+    color: white;
+    padding: 16px 32px;
+    font-size: 16px;
     font-weight: 600;
     border-radius: 50px;
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-    transition: all 0.3s ease;
-    min-width: 200px;
+    transition: var(--quote-transition);
+    min-width: 220px;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.request-quote-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.request-quote-btn:hover::before {
+    left: 100%;
 }
 
 .request-quote-btn:hover {
-    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, var(--quote-primary-hover) 0%, #004085 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+    color: white;
 }
 
 .request-quote-btn:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
-.request-quote-btn i {
-    margin-right: 8px;
+.request-quote-btn .btn-icon {
+    margin-right: 10px;
+    font-size: 18px;
 }
+
+/* ========================================
+   QUOTE REQUEST INFO SECTION
+======================================== */
 
 .request-quote-info {
     text-align: center;
-    color: #6c757d;
+    padding: 20px 0;
+    border-top: 1px solid var(--quote-border);
+    margin-top: 20px;
 }
 
-.request-quote-info p {
-    margin: 0;
-    font-size: 14px;
+.request-quote-info .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
 }
 
-.request-quote-info i {
-    margin-right: 5px;
-    color: #007bff;
+.request-quote-info .info-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: var(--quote-transition);
 }
 
-/* Alternative Layout for Additional Info Hook */
-.request-quote-additional .card {
-    border: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.request-quote-info .info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.request-quote-additional .card-title {
-    color: #007bff;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.request-quote-additional .card-text {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.request-quote-benefits ul li {
+.request-quote-info .info-item .info-icon {
+    font-size: 24px;
+    color: var(--quote-primary);
     margin-bottom: 8px;
-    color: #495057;
 }
 
-.request-quote-benefits ul li i {
-    margin-right: 8px;
-    font-size: 16px;
+.request-quote-info .info-item .info-text {
+    color: var(--quote-dark);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    margin: 0;
 }
 
-/* Modal Styles */
-#requestQuoteModal .modal-content {
+/* ========================================
+   MODAL PROFESSIONAL STYLING
+======================================== */
+
+#requestQuoteModal.modal .modal-dialog {
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+#requestQuoteModal.modal .modal-content {
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
 }
 
-#requestQuoteModal .modal-header {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+#requestQuoteModal.modal .modal-header {
+    background: linear-gradient(135deg, var(--quote-primary) 0%, var(--quote-primary-hover) 100%);
     color: white;
-    border-radius: 12px 12px 0 0;
-    border-bottom: none;
-}
-
-#requestQuoteModal .modal-title {
-    color: white;
-    font-weight: 600;
-}
-
-#requestQuoteModal .modal-title i {
-    margin-right: 8px;
-}
-
-#requestQuoteModal .close {
-    color: white;
-    opacity: 0.8;
-    text-shadow: none;
-}
-
-#requestQuoteModal .close:hover {
-    opacity: 1;
-}
-
-#requestQuoteModal .modal-body {
-    padding: 30px;
-}
-
-#requestQuoteModal .modal-footer {
-    border-top: 1px solid #e9ecef;
     padding: 20px 30px;
+    border: none;
+    position: relative;
 }
 
-/* Form Styles */
+#requestQuoteModal.modal .modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--quote-success) 0%, var(--quote-warning) 100%);
+}
+
+#requestQuoteModal.modal .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+#requestQuoteModal.modal .modal-title .btn-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+#requestQuoteModal.modal .close {
+    color: white;
+    opacity: 0.9;
+    text-shadow: none;
+    font-size: 1.8rem;
+    font-weight: 300;
+    transition: var(--quote-transition);
+}
+
+#requestQuoteModal.modal .close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#requestQuoteModal.modal .modal-body {
+    padding: 35px;
+    background: white;
+}
+
+#requestQuoteModal.modal .modal-footer {
+    border-top: 1px solid var(--quote-border);
+    padding: 25px 35px;
+    background: var(--quote-light);
+    border-radius: 0 0 16px 16px;
+}
+
+/* ========================================
+   PROFESSIONAL FORM STYLING
+======================================== */
+
+.request-quote-form {
+    max-width: 100%;
+}
+
 .request-quote-form .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    position: relative;
 }
 
 .request-quote-form .form-control-label {
     font-weight: 600;
-    color: #495057;
+    color: var(--quote-dark);
     margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
+    transition: var(--quote-transition);
 }
 
 .request-quote-form .form-control-label.required::after {
     content: " *";
-    color: #dc3545;
+    color: var(--quote-danger);
+    font-weight: 700;
 }
 
 .request-quote-form .form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 12px 15px;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    border: 2px solid var(--quote-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 15px;
+    transition: var(--quote-transition);
+    background: white;
+    width: 100%;
+    font-family: inherit;
 }
 
 .request-quote-form .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: var(--quote-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    outline: none;
+    transform: translateY(-1px);
 }
 
-.request-quote-form .form-control:invalid {
-    border-color: #dc3545;
+.request-quote-form .form-control:hover:not(:focus) {
+    border-color: var(--quote-primary);
+    opacity: 0.8;
 }
 
-.request-quote-form .form-control:valid {
-    border-color: #28a745;
+.request-quote-form .form-control.is-invalid {
+    border-color: var(--quote-danger);
+    background-image: none;
+}
+
+.request-quote-form .form-control.is-valid {
+    border-color: var(--quote-success);
+    background-image: none;
 }
 
 .request-quote-form .invalid-feedback {
     display: block;
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 5px;
+    color: var(--quote-danger);
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.request-quote-form .valid-feedback {
+    display: block;
+    color: var(--quote-success);
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 500;
 }
 
 .request-quote-form .form-text {
     color: #6c757d;
-    font-size: 12px;
-    margin-top: 5px;
+    font-size: 13px;
+    margin-top: 6px;
+    font-style: italic;
 }
 
 .request-quote-form textarea.form-control {
     resize: vertical;
-    min-height: 100px;
+    min-height: 120px;
+    font-family: inherit;
 }
 
-/* Button Styles */
+.request-quote-form select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 12px;
+    padding-right: 40px;
+}
+
+/* ========================================
+   PROFESSIONAL BUTTON STYLING
+======================================== */
+
 .request-quote-form .btn {
-    padding: 12px 25px;
+    padding: 14px 28px;
     font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    transition: var(--quote-transition);
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.request-quote-form .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.request-quote-form .btn:hover::before {
+    left: 100%;
 }
 
 .request-quote-form .btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--quote-primary) 0%, var(--quote-primary-hover) 100%);
     border: none;
+    color: white;
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
 .request-quote-form .btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, var(--quote-primary-hover) 0%, #004085 100%);
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    color: white;
+}
+
+.request-quote-form .btn-primary:active {
+    transform: translateY(0);
 }
 
 .request-quote-form .btn-secondary {
-    background: #6c757d;
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
     border: none;
+    color: white;
     box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
 }
 
 .request-quote-form .btn-secondary:hover {
-    background: #5a6268;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    color: white;
 }
 
-/* Messages */
+.request-quote-form .btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+.request-quote-form .btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   MESSAGES AND ALERTS
+======================================== */
+
+#requestQuoteMessages {
+    border-radius: 10px;
+    border: none;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+#requestQuoteMessages::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: currentColor;
+}
+
 #requestQuoteMessages.alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
     color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#requestQuoteMessages.alert-success::before {
+    background: var(--quote-success);
 }
 
 #requestQuoteMessages.alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
     color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
-#requestQuoteMessages.alert {
-    border-radius: 8px;
-    border: none;
-    padding: 15px;
-    margin-top: 20px;
+#requestQuoteMessages.alert-danger::before {
+    background: var(--quote-danger);
 }
 
-/* Loading Spinner */
+#requestQuoteMessages.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+#requestQuoteMessages.alert-warning::before {
+    background: var(--quote-warning);
+}
+
+#requestQuoteMessages.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+#requestQuoteMessages.alert-info::before {
+    background: var(--quote-primary);
+}
+
+/* Alert icons */
+#requestQuoteMessages .alert-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* ========================================
+   LOADING STATES
+======================================== */
+
 .request-quote-loading {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    backdrop-filter: blur(4px);
 }
 
 .request-quote-loading .spinner-border {
-    width: 3rem;
-    height: 3rem;
+    width: 4rem;
+    height: 4rem;
+    color: var(--quote-primary);
+    animation: spin 1s linear infinite;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+.request-quote-loading .loading-text {
+    margin-top: 20px;
+    color: var(--quote-dark);
+    font-weight: 500;
+    font-size: 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Button loading state */
+.request-quote-form .btn.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.request-quote-form .btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   ADDITIONAL INFO SECTION
+======================================== */
+
+.request-quote-additional {
+    margin-top: 30px;
+}
+
+.request-quote-additional .card {
+    border: 1px solid var(--quote-border);
+    border-radius: 12px;
+    box-shadow: var(--quote-shadow);
+    overflow: hidden;
+}
+
+.request-quote-additional .card-header {
+    background: linear-gradient(135deg, var(--quote-light) 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--quote-border);
+    padding: 20px;
+}
+
+.request-quote-additional .card-title {
+    color: var(--quote-primary);
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.request-quote-additional .card-body {
+    padding: 25px;
+}
+
+.request-quote-additional .card-text {
+    color: var(--quote-dark);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.request-quote-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.request-quote-benefits ul li {
+    margin-bottom: 12px;
+    color: var(--quote-dark);
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.request-quote-benefits ul li:last-child {
+    border-bottom: none;
+}
+
+.request-quote-benefits ul li .benefit-icon {
+    margin-right: 12px;
+    font-size: 16px;
+    color: var(--quote-success);
+    min-width: 20px;
+}
+
+/* ========================================
+   PROFESSIONAL RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 992px) {
     .request-quote-section {
-        padding: 15px;
-        margin: 15px 0;
-    }
-    
-    .request-quote-btn {
-        padding: 12px 25px;
-        font-size: 16px;
-        min-width: 180px;
-    }
-    
-    #requestQuoteModal .modal-body {
+        margin: 20px 0;
         padding: 20px;
     }
     
-    #requestQuoteModal .modal-footer {
-        padding: 15px 20px;
+    #requestQuoteModal.modal .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .request-quote-info .info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .request-quote-section {
+        margin: 15px 0;
+        padding: 18px;
+    }
+    
+    .request-quote-btn {
+        padding: 14px 28px;
+        font-size: 15px;
+        min-width: 200px;
+    }
+    
+    #requestQuoteModal.modal .modal-body {
+        padding: 25px;
+    }
+    
+    #requestQuoteModal.modal .modal-footer {
+        padding: 20px 25px;
     }
     
     .request-quote-form .btn {
-        padding: 10px 20px;
+        padding: 12px 24px;
         font-size: 14px;
+    }
+    
+    .request-quote-section .section-title {
+        font-size: 1.3rem;
     }
 }
 
 @media (max-width: 576px) {
     .request-quote-section {
-        padding: 10px;
         margin: 10px 0;
-    }
-    
-    .request-quote-btn {
-        padding: 10px 20px;
-        font-size: 14px;
-        min-width: 160px;
-    }
-    
-    #requestQuoteModal .modal-dialog {
-        margin: 10px;
-    }
-    
-    #requestQuoteModal .modal-body {
         padding: 15px;
     }
     
-    #requestQuoteModal .modal-footer {
-        padding: 10px 15px;
+    .request-quote-btn {
+        padding: 12px 24px;
+        font-size: 14px;
+        min-width: 180px;
+    }
+    
+    #requestQuoteModal.modal .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    #requestQuoteModal.modal .modal-body {
+        padding: 20px;
+    }
+    
+    #requestQuoteModal.modal .modal-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+    }
+    
+    #requestQuoteModal.modal .modal-footer .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .request-quote-section .section-title {
+        font-size: 1.2rem;
+    }
+    
+    .request-quote-additional .card-header,
+    .request-quote-additional .card-body {
+        padding: 15px;
     }
 }
 
-/* Animation Classes */
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
+/* ========================================
+   ANIMATION ENHANCEMENTS
+======================================== */
+
+.request-quote-section {
+    animation: fadeInUp 0.6s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
@@ -320,23 +719,112 @@
     }
 }
 
-.slide-in {
-    animation: slideIn 0.3s ease-out;
+.request-quote-info .info-item {
+    animation: fadeIn 0.8s ease-out;
+    animation-fill-mode: both;
 }
 
-@keyframes slideIn {
+.request-quote-info .info-item:nth-child(1) { animation-delay: 0.1s; }
+.request-quote-info .info-item:nth-child(2) { animation-delay: 0.2s; }
+.request-quote-info .info-item:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeIn {
     from {
-        transform: translateX(-100%);
+        opacity: 0;
+        transform: translateY(20px);
     }
     to {
-        transform: translateX(0);
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-/* Print Styles */
+/* Modal entrance animation */
+#requestQuoteModal.modal.fade .modal-dialog {
+    transform: translateY(-50px);
+    transition: transform 0.3s ease-out;
+}
+
+#requestQuoteModal.modal.show .modal-dialog {
+    transform: translateY(0);
+}
+
+/* ========================================
+   ACCESSIBILITY IMPROVEMENTS
+======================================== */
+
+.request-quote-btn:focus,
+.request-quote-form .btn:focus {
+    outline: 2px solid var(--quote-primary);
+    outline-offset: 2px;
+}
+
+.request-quote-form .form-control:focus {
+    outline: none;
+}
+
+.request-quote-section *:focus {
+    outline-color: var(--quote-primary);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .request-quote-section {
+        border-width: 2px;
+    }
+    
+    .request-quote-form .form-control {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .request-quote-btn,
+    .request-quote-form .btn,
+    .request-quote-form .form-control {
+        transition: none;
+    }
+    
+    .request-quote-section,
+    .request-quote-info .info-item {
+        animation: none;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+======================================== */
+
 @media print {
     .request-quote-section,
     #requestQuoteModal {
         display: none !important;
     }
-} 
+}
+
+/* ========================================
+   NAMESPACE PROTECTION
+======================================== */
+
+/* Ensure no conflicts with main product styling */
+.product-miniature .request-quote-section {
+    all: revert;
+    margin: 15px 0;
+    padding: 15px;
+}
+
+.product-page .request-quote-section {
+    margin: 30px 0;
+    padding: 25px;
+}
+
+/* Ensure admin styles don't interfere */
+.admin-panel .request-quote-section,
+.back-office .request-quote-section {
+    display: none;
+}
+
+/* ========================================
+   END REQUESTQUOTE PROFESSIONAL CSS
+======================================== */
