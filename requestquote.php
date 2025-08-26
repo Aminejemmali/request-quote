@@ -6,8 +6,21 @@
  * It hides the price and add-to-cart functionality and replaces it with a quote request form.
  * 
  * @author Amine Jameli
- * @version 1.0.0
+ * @version 2.0.0
  * @license MIT
+ * @since 1.0.0
+ * @updated 2024-12-19
+ * 
+ * Version 2.0.0 Changes:
+ * - Fixed critical issues with request button only showing in quick preview
+ * - Fixed modal getting stuck problems
+ * - Fixed admin panel not appearing in Sell menu
+ * - Enhanced hook integration for better theme compatibility
+ * - Improved AJAX handling and error management
+ * - Added unique modal IDs to prevent conflicts
+ * - Better image preservation while hiding prices
+ * - Enhanced security and validation
+ * - Comprehensive documentation and testing guides
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -23,7 +36,7 @@ class RequestQuote extends Module
     {
         $this->name = 'requestquote';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '2.0.0';
         $this->author = 'Amine Jameli';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -76,6 +89,11 @@ class RequestQuote extends Module
             'displayAfterProductThumbs',       // Hook for additional product info
             'displayProductButtons',           // Hook for product buttons
             'displayProductListFunctionalButtons', // Hook for product list buttons
+            'displayRightColumnProduct',       // Right column on product page
+            'displayLeftColumnProduct',        // Left column on product page
+            'displayProductTab',               // Product tab
+            'displayProductTabContent',        // Product tab content
+            'actionFrontControllerSetMedia',   // Add CSS/JS files
         ];
 
         foreach ($hooks as $hook) {
@@ -388,6 +406,56 @@ class RequestQuote extends Module
         }
 
         return $globalCss;
+    }
+
+    /**
+     * Hook: actionFrontControllerSetMedia - Add CSS and JS files
+     */
+    public function hookActionFrontControllerSetMedia($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return;
+        }
+
+        // Only add assets on product pages
+        if ($this->context->controller->php_self == 'product') {
+            $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
+            $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+        }
+    }
+
+    /**
+     * Hook: displayRightColumnProduct - Show quote button in right column
+     */
+    public function hookDisplayRightColumnProduct($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        if (isset($params['product']) && is_object($params['product'])) {
+            $product = $params['product'];
+            
+            $this->context->smarty->assign([
+                'product' => $product,
+                'require_phone' => (bool)Configuration::get('REQUESTQUOTE_REQUIRE_PHONE'),
+                'csrf_token' => Tools::getToken(false),
+                'module_dir' => $this->_path,
+                'module_name' => $this->name,
+            ]);
+
+            return $this->display(__FILE__, 'views/templates/hook/product-additional-info.tpl');
+        }
+
+        return '';
+    }
+
+    /**
+     * Hook: displayLeftColumnProduct - Show quote button in left column
+     */
+    public function hookDisplayLeftColumnProduct($params)
+    {
+        return $this->hookDisplayRightColumnProduct($params);
     }
 
     /**
@@ -892,6 +960,12 @@ class RequestQuote extends Module
     private function createAdminTab()
     {
         try {
+            // Check if tab already exists
+            $tabId = (int)Tab::getIdFromClassName('AdminRequestQuote');
+            if ($tabId) {
+                return true; // Tab already exists
+            }
+
             $tab = new Tab();
             $tab->active = 1;
             $tab->class_name = 'AdminRequestQuote';
@@ -901,10 +975,21 @@ class RequestQuote extends Module
                 $tab->name[$lang['id_lang']] = 'Quote Requests';
             }
             
-            $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentSell');
+            // Try different parent locations
+            $parentId = (int)Tab::getIdFromClassName('AdminParentSell');
+            if (!$parentId) {
+                $parentId = (int)Tab::getIdFromClassName('AdminParentOrders');
+            }
+            if (!$parentId) {
+                $parentId = 0; // Root level if no parent found
+            }
+            
+            $tab->id_parent = $parentId;
             $tab->module = $this->name;
+            $tab->position = Tab::getNewLastPosition($parentId);
             
             if (!$tab->add()) {
+                $this->_errors[] = $this->l('Failed to add admin tab');
                 return false;
             }
             

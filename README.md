@@ -182,14 +182,29 @@ This module is released under the MIT License. See the license file for details.
 
 ## 🔄 Version History
 
+### Version 2.0.0 (Latest)
+- **MAJOR UPDATE**: Complete module overhaul and bug fixes
+- Fixed request button appearing only in quick preview
+- Fixed modal getting stuck issues
+- Fixed admin panel not appearing in Sell menu
+- Enhanced hook integration for all product page locations
+- Improved AJAX form handling with proper error management
+- Added unique modal IDs to prevent conflicts
+- Enhanced security with improved CSRF token validation
+- Better image preservation while hiding prices
+- Improved email notification system
+- Added comprehensive installation and testing guides
+- Enhanced admin interface with better quote management
+- Mobile responsive design improvements
+- Performance optimizations
+
 ### Version 1.0.0
 - Initial release
-- Complete price hiding functionality
-- Quote request form with AJAX submission
-- Admin interface for quote management
+- Basic price hiding functionality
+- Quote request form
+- Admin interface
 - Email notifications
-- Mobile responsive design
-- Security features and validation
+- Security features
 
 ## 🤝 Contributing
 

@@ -23,9 +23,26 @@ class RequestQuoteQuoteModuleFrontController extends ModuleFrontController
     }
 
     /**
+     * Process page content
+     */
+    public function initContent()
+    {
+        parent::initContent();
+        
+        // Handle AJAX requests
+        if (Tools::isSubmit('ajax')) {
+            $this->processAjax();
+            exit;
+        }
+        
+        // For non-AJAX requests, redirect to home
+        Tools::redirect('index.php');
+    }
+
+    /**
      * Process AJAX quote request
      */
-    public function displayAjax()
+    public function processAjax()
     {
         $response = ['success' => false, 'message' => ''];
 
@@ -36,16 +53,17 @@ class RequestQuoteQuoteModuleFrontController extends ModuleFrontController
             }
 
             // Validate CSRF token
-            if (!Tools::getToken(false) || Tools::getValue('csrf_token') !== Tools::getToken(false)) {
+            $token = Tools::getValue('csrf_token');
+            if (!$token || $token !== Tools::getToken(false)) {
                 throw new Exception($this->module->l('Invalid security token.', 'quote'));
             }
 
             // Get form data
             $productId = (int)Tools::getValue('product_id');
-            $clientName = Tools::getValue('client_name');
-            $email = Tools::getValue('email');
-            $phone = Tools::getValue('phone');
-            $note = Tools::getValue('note');
+            $clientName = trim(Tools::getValue('client_name'));
+            $email = trim(Tools::getValue('email'));
+            $phone = trim(Tools::getValue('phone'));
+            $note = trim(Tools::getValue('note'));
 
             // Validate required fields
             if (!$productId || !$clientName || !$email) {
@@ -91,6 +109,7 @@ class RequestQuoteQuoteModuleFrontController extends ModuleFrontController
             $response['message'] = $e->getMessage();
         }
 
+        // Send JSON response
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;

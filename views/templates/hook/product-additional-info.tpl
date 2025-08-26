@@ -43,7 +43,7 @@
                 {l s='Interested in this product? Contact us for a personalized quote tailored to your needs.' mod='requestquote'}
             </p>
             
-            <button type="button" class="btn btn-primary btn-lg request-quote-btn" data-toggle="modal" data-target="#requestQuoteModal">
+            <button type="button" class="btn btn-primary btn-lg request-quote-btn" data-toggle="modal" data-target="#requestQuoteModal-{$product->id}">
                 <i class="icon-quote-left"></i> {l s='Request Quote Now' mod='requestquote'}
             </button>
             

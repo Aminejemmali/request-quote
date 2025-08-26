@@ -2,7 +2,7 @@
 <module>
     <name>requestquote</name>
     <displayName><![CDATA[Request Quote]]></displayName>
-    <version><![CDATA[1.0.0]]></version>
+    <version><![CDATA[2.0.0]]></version>
     <description><![CDATA[Allow customers to request quotes for products instead of purchasing directly.]]></description>
     <author><![CDATA[Amine Jameli]]></author>
     <tab><![CDATA[front_office_features]]></tab>

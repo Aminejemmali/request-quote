@@ -30,9 +30,12 @@
 </style>
 
 {* Quote Request Button *}
-<div class="request-quote-section">
+<div class="request-quote-section" id="request-quote-section-{$product->id}">
     <div class="request-quote-button-wrapper">
-        <button type="button" class="btn btn-primary btn-lg request-quote-btn" data-toggle="modal" data-target="#requestQuoteModal">
+        <button type="button" class="btn btn-primary btn-lg request-quote-btn" 
+                data-toggle="modal" 
+                data-target="#requestQuoteModal-{$product->id}"
+                data-product-id="{$product->id}">
             <i class="icon-quote-left"></i> {l s='Request Quote' mod='requestquote'}
         </button>
     </div>
@@ -46,11 +49,11 @@
 </div>
 
 {* Quote Request Modal *}
-<div class="modal fade" id="requestQuoteModal" tabindex="-1" role="dialog" aria-labelledby="requestQuoteModalLabel" aria-hidden="true">
+<div class="modal fade" id="requestQuoteModal-{$product->id}" tabindex="-1" role="dialog" aria-labelledby="requestQuoteModalLabel-{$product->id}" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="requestQuoteModalLabel">
+                <h5 class="modal-title" id="requestQuoteModalLabel-{$product->id}">
                     <i class="icon-quote-left"></i> {l s='Request Quote' mod='requestquote'}
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -58,7 +61,7 @@
                 </button>
             </div>
             
-            <form id="requestQuoteForm" class="request-quote-form">
+            <form id="requestQuoteForm-{$product->id}" class="request-quote-form">
                 <div class="modal-body">
                     {* CSRF Token *}
                     <input type="hidden" name="csrf_token" value="{$csrf_token}">
@@ -152,14 +155,14 @@
                     </div>
                     
                     {* Success/Error Messages *}
-                    <div id="requestQuoteMessages" class="alert" style="display: none;"></div>
+                    <div id="requestQuoteMessages-{$product->id}" class="alert" style="display: none;"></div>
                 </div>
                 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         {l s='Cancel' mod='requestquote'}
                     </button>
-                    <button type="submit" class="btn btn-primary" id="submitQuoteBtn">
+                    <button type="submit" class="btn btn-primary" id="submitQuoteBtn-{$product->id}">
                         <i class="icon-send"></i> {l s='Submit Quote Request' mod='requestquote'}
                     </button>
                 </div>
@@ -178,9 +181,10 @@
 {* JavaScript for form handling *}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('requestQuoteForm');
-    const submitBtn = document.getElementById('submitQuoteBtn');
-    const messagesDiv = document.getElementById('requestQuoteMessages');
+    const productId = '{$product->id}';
+    const form = document.getElementById('requestQuoteForm-' + productId);
+    const submitBtn = document.getElementById('submitQuoteBtn-' + productId);
+    const messagesDiv = document.getElementById('requestQuoteMessages-' + productId);
     
     if (form && submitBtn) {
         form.addEventListener('submit', function(e) {
@@ -199,7 +203,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Submit via AJAX
             fetch('{$link->getModuleLink('requestquote', 'quote')}', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -214,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Close modal after delay
                     setTimeout(function() {
-                        $('#requestQuoteModal').modal('hide');
+                        $('#requestQuoteModal-' + productId).modal('hide');
                         messagesDiv.style.display = 'none';
                     }, 3000);
                 } else {
