@@ -1,0 +1,204 @@
+/**
+ * Abrasif Italia - CSS SIMPLE et PROFESSIONNEL
+ * Version: 2.0 - Performance Optimized
+ * Couleurs: Rouge (#e31e24), Vert (#28a745), Blanc (#ffffff)
+ */
+
+/* ========================================
+   1. COULEURS SIMPLES
+======================================== */
+:root {
+    --ai-red: #e31e24;
+    --ai-green: #28a745;
+    --ai-white: #ffffff;
+    --ai-gray: #f8f9fa;
+    --ai-dark: #343a40;
+}
+
+/* ========================================
+   2. HEADER SIMPLE
+======================================== */
+.header-top {
+    border-bottom: 2px solid var(--ai-red) !important;
+}
+
+.main-menu {
+    background: var(--ai-red) !important;
+}
+
+.main-menu .navbar-nav .nav-link {
+    color: var(--ai-white) !important;
+    font-weight: 500 !important;
+}
+
+.main-menu .navbar-nav .nav-link:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: var(--ai-white) !important;
+}
+
+/* ========================================
+   3. PRODUITS SIMPLES (SANS LAG)
+======================================== */
+.product-miniature {
+    border: 1px solid #e0e0e0 !important;
+    background: var(--ai-white) !important;
+    /* SUPPRESSION DE TOUTES LES ANIMATIONS LOURDES */
+}
+
+.product-miniature:hover {
+    border-color: var(--ai-red) !important;
+    /* Effet simple sans transform ni box-shadow lourds */
+}
+
+/* SUPPRESSION DEFINITIVE QUICK VIEW - VERSION SIMPLE */
+.quick-view,
+.quickview,
+.js-quick-view-btn,
+a[data-link-action="quickview"],
+button[data-link-action="quickview"],
+.btn[data-link-action="quickview"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ========================================
+   4. BOUTON DEVIS SIMPLE
+======================================== */
+.request-quote-btn {
+    background: var(--ai-red) !important;
+    color: var(--ai-white) !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    /* SUPPRESSION DES ANIMATIONS LOURDES */
+}
+
+.request-quote-btn:hover {
+    background: var(--ai-green) !important;
+    color: var(--ai-white) !important;
+}
+
+/* ========================================
+   5. MODAL SIMPLE
+======================================== */
+.quote-modal {
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 9999 !important;
+}
+
+.quote-modal-content {
+    background: var(--ai-white) !important;
+    border-radius: 8px !important;
+    border: 2px solid var(--ai-red) !important;
+    /* Suppression des effets complexes */
+}
+
+.quote-modal-content h3 {
+    background: var(--ai-red) !important;
+    color: var(--ai-white) !important;
+    margin: 0 0 20px 0 !important;
+    padding: 15px !important;
+    text-align: center !important;
+}
+
+.quote-form input,
+.quote-form textarea {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    width: 100% !important;
+    margin: 5px 0 !important;
+}
+
+.quote-form input:focus,
+.quote-form textarea:focus {
+    border-color: var(--ai-red) !important;
+    outline: none !important;
+}
+
+.quote-submit {
+    background: var(--ai-green) !important;
+    color: var(--ai-white) !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    width: 100% !important;
+}
+
+.quote-submit:hover {
+    background: var(--ai-red) !important;
+}
+
+/* ========================================
+   6. FOOTER SIMPLE
+======================================== */
+.footer-container {
+    background: var(--ai-dark) !important;
+    color: var(--ai-white) !important;
+    border-top: 3px solid var(--ai-red) !important;
+}
+
+.footer-container a {
+    color: var(--ai-white) !important;
+}
+
+.footer-container a:hover {
+    color: var(--ai-green) !important;
+}
+
+/* ========================================
+   7. RESPONSIVE SIMPLE
+======================================== */
+@media (max-width: 768px) {
+    .request-quote-btn {
+        padding: 8px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    .quote-modal-content {
+        width: 95% !important;
+        margin: 10px !important;
+    }
+}
+
+/* ========================================
+   8. PERFORMANCE - SUPPRESSION LAGS
+======================================== */
+
+/* Suppression de tous les effets CSS lourds */
+* {
+    /* Désactiver les transitions lourdes qui causent du lag */
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Réactivation seulement pour les éléments essentiels */
+.request-quote-btn,
+.quote-submit,
+.main-menu .navbar-nav .nav-link {
+    transition: background-color 0.2s ease !important;
+}
+
+/* Suppression des box-shadows lourds */
+.product-miniature,
+.quote-modal-content {
+    box-shadow: none !important;
+}
+
+/* Optimisation des images */
+.product-miniature img {
+    max-width: 100% !important;
+    height: auto !important;
+    /* Suppression des effets sur images */
+    transform: none !important;
+    transition: none !important;
+}
+
+/* ========================================
+   FIN - VERSION SIMPLE ET RAPIDE
+======================================== */ 
