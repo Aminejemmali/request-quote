@@ -45,41 +45,51 @@ class RequestQuote extends Module
      */
     public function install()
     {
-        // Check if PrestaShop version is compatible
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-        }
+        try {
+            // Check if PrestaShop version is compatible
+            if (Shop::isFeatureActive()) {
+                Shop::setContext(Shop::CONTEXT_ALL);
+            }
 
-        // Create database table for quote requests
-        if (!$this->createQuoteRequestsTable()) {
-            return false;
-        }
-
-        // Register hooks
-        $hooks = [
-            'displayProductActions',           // Hook for product page actions (Classic theme)
-            'displayProductAdditionalInfo',    // Alternative hook for product info
-            'actionFrontControllerSetMedia',   // Hook to inject CSS/JS
-            'displayHeader',                   // Hook for header assets
-            'displayBackOfficeHeader',         // Hook for admin assets
-        ];
-
-        foreach ($hooks as $hook) {
-            if (!$this->registerHook($hook)) {
+            // Create database table for quote requests
+            if (!$this->createQuoteRequestsTable()) {
+                PrestaShopLogger::addLog('RequestQuote: Failed to create database table', 3);
                 return false;
             }
-        }
 
-        // Create admin tab
-        if (!$this->createAdminTab()) {
+            // Register hooks with error handling
+            $hooks = [
+                'displayProductActions',           // Hook for product page actions (Classic theme)
+                'displayProductAdditionalInfo',    // Alternative hook for product info
+                'actionFrontControllerSetMedia',   // Hook to inject CSS/JS
+                'displayHeader',                   // Hook for header assets
+                'displayBackOfficeHeader',         // Hook for admin assets
+            ];
+
+            foreach ($hooks as $hook) {
+                $hookResult = $this->registerHook($hook);
+                if ($hookResult === false) {
+                    PrestaShopLogger::addLog('RequestQuote: Failed to register hook ' . $hook, 3);
+                    return false;
+                }
+            }
+
+            // Create admin tab
+            if (!$this->createAdminTab()) {
+                PrestaShopLogger::addLog('RequestQuote: Failed to create admin tab', 3);
+                return false;
+            }
+
+            // Set default configuration
+            Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
+            Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0);
+
+            return parent::install();
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote install error: ' . $e->getMessage(), 3);
             return false;
         }
-
-        // Set default configuration
-        Configuration::updateValue('REQUESTQUOTE_ENABLED', 1);
-        Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0);
-
-        return parent::install();
     }
 
     /**
@@ -88,17 +98,23 @@ class RequestQuote extends Module
      */
     public function uninstall()
     {
-        // Remove database table
-        $this->dropQuoteRequestsTable();
+        try {
+            // Remove database table
+            $this->dropQuoteRequestsTable();
 
-        // Remove admin tab
-        $this->removeAdminTab();
+            // Remove admin tab
+            $this->removeAdminTab();
 
-        // Remove configuration values
-        Configuration::deleteByName('REQUESTQUOTE_ENABLED');
-        Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE');
+            // Remove configuration values
+            Configuration::deleteByName('REQUESTQUOTE_ENABLED');
+            Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE');
 
-        return parent::uninstall();
+            return parent::uninstall();
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote uninstall error: ' . $e->getMessage(), 3);
+            return false;
+        }
     }
 
     /**
@@ -106,23 +122,35 @@ class RequestQuote extends Module
      */
     private function createQuoteRequestsTable()
     {
-        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
-            `id_quote` int(11) NOT NULL AUTO_INCREMENT,
-            `id_product` int(11) NOT NULL,
-            `id_shop` int(11) NOT NULL DEFAULT 1,
-            `client_name` varchar(255) NOT NULL,
-            `email` varchar(255) NOT NULL,
-            `phone` varchar(50) DEFAULT NULL,
-            `note` text DEFAULT NULL,
-            `date_add` datetime NOT NULL,
-            `date_upd` datetime NOT NULL,
-            PRIMARY KEY (`id_quote`),
-            KEY `id_product` (`id_product`),
-            KEY `id_shop` (`id_shop`),
-            KEY `date_add` (`date_add`)
-        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+        try {
+            $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'requestquote_quotes` (
+                `id_quote` int(11) NOT NULL AUTO_INCREMENT,
+                `id_product` int(11) NOT NULL,
+                `id_shop` int(11) NOT NULL DEFAULT 1,
+                `client_name` varchar(255) NOT NULL,
+                `email` varchar(255) NOT NULL,
+                `phone` varchar(50) DEFAULT NULL,
+                `note` text DEFAULT NULL,
+                `date_add` datetime NOT NULL,
+                `date_upd` datetime NOT NULL,
+                PRIMARY KEY (`id_quote`),
+                KEY `id_product` (`id_product`),
+                KEY `id_shop` (`id_shop`),
+                KEY `date_add` (`date_add`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-        return Db::getInstance()->execute($sql);
+            $result = Db::getInstance()->execute($sql);
+            if ($result === false) {
+                PrestaShopLogger::addLog('RequestQuote: Database table creation failed', 3);
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote: Database table creation error: ' . $e->getMessage(), 3);
+            return false;
+        }
     }
 
     /**
@@ -139,19 +167,31 @@ class RequestQuote extends Module
      */
     private function createAdminTab()
     {
-        $tab = new Tab();
-        $tab->active = 1;
-        $tab->class_name = 'AdminRequestQuote';
-        $tab->name = array();
-        
-        foreach (Language::getLanguages(true) as $lang) {
-            $tab->name[$lang['id_lang']] = 'Quote Requests';
+        try {
+            $tab = new Tab();
+            $tab->active = 1;
+            $tab->class_name = 'AdminRequestQuote';
+            $tab->name = array();
+            
+            foreach (Language::getLanguages(true) as $lang) {
+                $tab->name[$lang['id_lang']] = 'Quote Requests';
+            }
+            
+            $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentSell');
+            $tab->module = $this->name;
+            
+            $result = $tab->add();
+            if ($result === false) {
+                PrestaShopLogger::addLog('RequestQuote: Failed to add admin tab', 3);
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote: Admin tab creation error: ' . $e->getMessage(), 3);
+            return false;
         }
-        
-        $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentSell');
-        $tab->module = $this->name;
-        
-        return $tab->add();
     }
 
     /**
@@ -172,17 +212,35 @@ class RequestQuote extends Module
      */
     public function hookDisplayProductActions($params)
     {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+        try {
+            if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+                return '';
+            }
+
+            // Vérification des paramètres
+            if (!isset($params['product']) || !is_object($params['product'])) {
+                return '';
+            }
+
+            $product = $params['product'];
+            
+            // Génération du token CSRF
+            $csrfToken = $this->generateCSRFToken();
+
+            // Assignation des variables Smarty
+            $this->context->smarty->assign([
+                'product' => $product,
+                'module_dir' => $this->_path,
+                'csrf_token' => $csrfToken,
+                'require_phone' => Configuration::get('REQUESTQUOTE_REQUIRE_PHONE')
+            ]);
+
+            return $this->display(__FILE__, 'product-actions.tpl');
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote hook error: ' . $e->getMessage(), 3);
             return '';
         }
-
-        $this->context->smarty->assign([
-            'product' => $params['product'],
-            'module_dir' => $this->_path,
-            'csrf_token' => $this->generateCSRFToken(),
-        ]);
-
-        return $this->display(__FILE__, 'product-actions.tpl');
     }
 
     /**
@@ -190,17 +248,35 @@ class RequestQuote extends Module
      */
     public function hookDisplayProductAdditionalInfo($params)
     {
-        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+        try {
+            if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+                return '';
+            }
+
+            // Vérification des paramètres
+            if (!isset($params['product']) || !is_object($params['product'])) {
+                return '';
+            }
+
+            $product = $params['product'];
+            
+            // Génération du token CSRF
+            $csrfToken = $this->generateCSRFToken();
+
+            // Assignation des variables Smarty
+            $this->context->smarty->assign([
+                'product' => $product,
+                'module_dir' => $this->_path,
+                'csrf_token' => $csrfToken,
+                'require_phone' => Configuration::get('REQUESTQUOTE_REQUIRE_PHONE')
+            ]);
+
+            return $this->display(__FILE__, 'product-additional-info.tpl');
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote additional info hook error: ' . $e->getMessage(), 3);
             return '';
         }
-
-        $this->context->smarty->assign([
-            'product' => $params['product'],
-            'module_dir' => $this->_path,
-            'csrf_token' => $this->generateCSRFToken(),
-        ]);
-
-        return $this->display(__FILE__, 'product-additional-info.tpl');
     }
 
     /**
@@ -213,9 +289,16 @@ class RequestQuote extends Module
         }
 
         // Only load assets on product pages
-        if (isset($this->context->controller) && $this->context->controller->controller_type === 'front' && $this->context->controller->php_self === 'product') {
-            $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
-            $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+        if (isset($this->context->controller) && 
+            property_exists($this->context->controller, 'controller_type') && 
+            property_exists($this->context->controller, 'php_self')) {
+            
+            if ($this->context->controller->controller_type === 'front' && 
+                $this->context->controller->php_self === 'product') {
+                
+                $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
+                $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+            }
         }
     }
 
@@ -229,9 +312,16 @@ class RequestQuote extends Module
         }
 
         // Only load assets on product pages
-        if (isset($this->context->controller) && $this->context->controller->controller_type === 'front' && $this->context->controller->php_self === 'product') {
-            $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
-            $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+        if (isset($this->context->controller) && 
+            property_exists($this->context->controller, 'controller_type') && 
+            property_exists($this->context->controller, 'php_self')) {
+            
+            if ($this->context->controller->controller_type === 'front' && 
+                $this->context->controller->php_self === 'product') {
+                
+                $this->context->controller->addCSS($this->_path . 'views/css/requestquote.css');
+                $this->context->controller->addJS($this->_path . 'views/js/requestquote.js');
+            }
         }
 
         return '';
@@ -253,13 +343,19 @@ class RequestQuote extends Module
      */
     private function generateCSRFToken()
     {
-        if (!isset($this->context->cookie->requestquote_csrf)) {
-            $token = Tools::passwdGen(32);
-            $this->context->cookie->requestquote_csrf = $token;
-            $this->context->cookie->write();
+        try {
+            if (!isset($this->context->cookie->requestquote_csrf)) {
+                $token = Tools::passwdGen(32);
+                $this->context->cookie->requestquote_csrf = $token;
+                $this->context->cookie->write();
+            }
+            
+            return $this->context->cookie->requestquote_csrf ?? '';
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote CSRF generation error: ' . $e->getMessage(), 3);
+            return '';
         }
-        
-        return $this->context->cookie->requestquote_csrf;
     }
 
     /**
@@ -267,11 +363,17 @@ class RequestQuote extends Module
      */
     public function validateCSRFToken($token)
     {
-        if (!isset($this->context->cookie->requestquote_csrf)) {
+        try {
+            if (!isset($this->context->cookie->requestquote_csrf) || empty($token)) {
+                return false;
+            }
+            
+            return hash_equals($this->context->cookie->requestquote_csrf, $token);
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote CSRF validation error: ' . $e->getMessage(), 3);
             return false;
         }
-        
-        return hash_equals($this->context->cookie->requestquote_csrf, $token);
     }
 
     /**
@@ -279,19 +381,25 @@ class RequestQuote extends Module
      */
     public function getContent()
     {
-        $output = '';
+        try {
+            $output = '';
 
-        if (Tools::isSubmit('submit' . $this->name)) {
-            $enabled = (int)Tools::getValue('REQUESTQUOTE_ENABLED');
-            $requirePhone = (int)Tools::getValue('REQUESTQUOTE_REQUIRE_PHONE');
+            if (Tools::isSubmit('submit' . $this->name)) {
+                $enabled = (int)Tools::getValue('REQUESTQUOTE_ENABLED');
+                $requirePhone = (int)Tools::getValue('REQUESTQUOTE_REQUIRE_PHONE');
 
-            Configuration::updateValue('REQUESTQUOTE_ENABLED', $enabled);
-            Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', $requirePhone);
+                Configuration::updateValue('REQUESTQUOTE_ENABLED', $enabled);
+                Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', $requirePhone);
 
-            $output .= $this->displayConfirmation($this->l('Settings updated successfully.'));
+                $output .= $this->displayConfirmation($this->l('Settings updated successfully.'));
+            }
+
+            return $output . $this->displayForm();
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote getContent error: ' . $e->getMessage(), 3);
+            return $this->displayError('An error occurred while loading the configuration.');
         }
-
-        return $output . $this->displayForm();
     }
 
     /**
@@ -299,71 +407,77 @@ class RequestQuote extends Module
      */
     public function displayForm()
     {
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        try {
+            $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
-        $fields_form[0]['form'] = [
-            'legend' => [
-                'title' => $this->l('Settings'),
-            ],
-            'input' => [
-                [
-                    'type' => 'switch',
-                    'label' => $this->l('Enable Quote Requests'),
-                    'name' => 'REQUESTQUOTE_ENABLED',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'active_on',
-                            'value' => true,
-                            'label' => $this->l('Enabled')
+            $fields_form[0]['form'] = [
+                'legend' => [
+                    'title' => $this->l('Settings'),
+                ],
+                'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Enable Quote Requests'),
+                        'name' => 'REQUESTQUOTE_ENABLED',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            ]
                         ],
-                        [
-                            'id' => 'active_off',
-                            'value' => false,
-                            'label' => $this->l('Disabled')
-                        ]
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Require Phone Number'),
+                        'name' => 'REQUESTQUOTE_REQUIRE_PHONE',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'phone_on',
+                                'value' => true,
+                                'label' => $this->l('Required')
+                            ],
+                            [
+                                'id' => 'phone_off',
+                                'value' => false,
+                                'label' => $this->l('Optional')
+                            ]
+                        ],
                     ],
                 ],
-                [
-                    'type' => 'switch',
-                    'label' => $this->l('Require Phone Number'),
-                    'name' => 'REQUESTQUOTE_REQUIRE_PHONE',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'phone_on',
-                            'value' => true,
-                            'label' => $this->l('Required')
-                        ],
-                        [
-                            'id' => 'phone_off',
-                            'value' => false,
-                            'label' => $this->l('Optional')
-                        ]
-                    ],
-                ],
-            ],
-            'submit' => [
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            ]
-        ];
+                'submit' => [
+                    'title' => $this->l('Save'),
+                    'class' => 'btn btn-default pull-right'
+                ]
+            ];
 
-        $helper = new HelperForm();
-        $helper->module = $this;
-        $helper->name_controller = $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
-        $helper->default_form_language = $default_lang;
-        $helper->allow_employee_form_lang = $default_lang;
-        $helper->title = $this->displayName;
-        $helper->show_toolbar = true;
-        $helper->toolbar_scroll = true;
-        $helper->submit_action = 'submit' . $this->name;
+            $helper = new HelperForm();
+            $helper->module = $this;
+            $helper->name_controller = $this->name;
+            $helper->token = Tools::getAdminTokenLite('AdminModules');
+            $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+            $helper->default_form_language = $default_lang;
+            $helper->allow_employee_form_lang = $default_lang;
+            $helper->title = $this->displayName;
+            $helper->show_toolbar = true;
+            $helper->toolbar_scroll = true;
+            $helper->submit_action = 'submit' . $this->name;
 
-        $helper->fields_value['REQUESTQUOTE_ENABLED'] = Configuration::get('REQUESTQUOTE_ENABLED');
-        $helper->fields_value['REQUESTQUOTE_REQUIRE_PHONE'] = Configuration::get('REQUESTQUOTE_REQUIRE_PHONE');
+            $helper->fields_value['REQUESTQUOTE_ENABLED'] = Configuration::get('REQUESTQUOTE_ENABLED');
+            $helper->fields_value['REQUESTQUOTE_REQUIRE_PHONE'] = Configuration::get('REQUESTQUOTE_REQUIRE_PHONE');
 
-        return $helper->generateForm($fields_form);
+            return $helper->generateForm($fields_form);
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('RequestQuote displayForm error: ' . $e->getMessage(), 3);
+            return $this->displayError('An error occurred while generating the form.');
+        }
     }
 } 
