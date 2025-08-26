@@ -1,0 +1,342 @@
+/**
+ * RequestQuote Module CSS Styles
+ * Styles for quote request functionality on product pages
+ */
+
+/* Quote Request Section */
+.request-quote-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.request-quote-button-wrapper {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.request-quote-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.request-quote-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.request-quote-btn:active {
+    transform: translateY(0);
+}
+
+.request-quote-btn i {
+    margin-right: 8px;
+}
+
+.request-quote-info {
+    text-align: center;
+    color: #6c757d;
+}
+
+.request-quote-info p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.request-quote-info i {
+    margin-right: 5px;
+    color: #007bff;
+}
+
+/* Alternative Layout for Additional Info Hook */
+.request-quote-additional .card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.request-quote-additional .card-title {
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.request-quote-additional .card-text {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.request-quote-benefits ul li {
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.request-quote-benefits ul li i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Modal Styles */
+#requestQuoteModal .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#requestQuoteModal .modal-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+}
+
+#requestQuoteModal .modal-title {
+    color: white;
+    font-weight: 600;
+}
+
+#requestQuoteModal .modal-title i {
+    margin-right: 8px;
+}
+
+#requestQuoteModal .close {
+    color: white;
+    opacity: 0.8;
+    text-shadow: none;
+}
+
+#requestQuoteModal .close:hover {
+    opacity: 1;
+}
+
+#requestQuoteModal .modal-body {
+    padding: 30px;
+}
+
+#requestQuoteModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 20px 30px;
+}
+
+/* Form Styles */
+.request-quote-form .form-group {
+    margin-bottom: 20px;
+}
+
+.request-quote-form .form-control-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.request-quote-form .form-control-label.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.request-quote-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.request-quote-form .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.request-quote-form .form-control:invalid {
+    border-color: #dc3545;
+}
+
+.request-quote-form .form-control:valid {
+    border-color: #28a745;
+}
+
+.request-quote-form .invalid-feedback {
+    display: block;
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.request-quote-form .form-text {
+    color: #6c757d;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.request-quote-form textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Button Styles */
+.request-quote-form .btn {
+    padding: 12px 25px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.request-quote-form .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.request-quote-form .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.request-quote-form .btn-secondary {
+    background: #6c757d;
+    border: none;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.request-quote-form .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+/* Messages */
+#requestQuoteMessages.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+#requestQuoteMessages.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+#requestQuoteMessages.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+/* Loading Spinner */
+.request-quote-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.request-quote-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .request-quote-section {
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .request-quote-btn {
+        padding: 12px 25px;
+        font-size: 16px;
+        min-width: 180px;
+    }
+    
+    #requestQuoteModal .modal-body {
+        padding: 20px;
+    }
+    
+    #requestQuoteModal .modal-footer {
+        padding: 15px 20px;
+    }
+    
+    .request-quote-form .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .request-quote-section {
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .request-quote-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 160px;
+    }
+    
+    #requestQuoteModal .modal-dialog {
+        margin: 10px;
+    }
+    
+    #requestQuoteModal .modal-body {
+        padding: 15px;
+    }
+    
+    #requestQuoteModal .modal-footer {
+        padding: 10px 15px;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .request-quote-section,
+    #requestQuoteModal {
+        display: none !important;
+    }
+} 
