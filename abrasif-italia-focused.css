@@ -1,0 +1,317 @@
+/**
+ * Abrasif Italia - Focused Minimal CSS
+ * Only handles: Header, Product Cards, Preview Removal
+ * Lightweight and safe - no conflicts
+ */
+
+/* ========================================
+   ABRASIF ITALIA BRAND COLORS
+======================================== */
+
+:root {
+    --abrasif-red: #e31e24;
+    --abrasif-green: #28a745;
+    --abrasif-white: #ffffff;
+    --abrasif-dark: #343a40;
+}
+
+/* ========================================
+   HEADER STYLING (Complete)
+======================================== */
+
+/* Top header bar */
+.header-top {
+    border-bottom: 3px solid var(--abrasif-red) !important;
+    background: var(--abrasif-white) !important;
+}
+
+/* Main header */
+.header-nav {
+    background: var(--abrasif-white) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Logo enhancement */
+.header-nav .navbar-brand img {
+    max-height: 60px !important;
+    transition: transform 0.3s ease !important;
+}
+
+.header-nav .navbar-brand:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* Main navigation menu */
+.main-menu,
+.js-top-menu,
+.top-menu {
+    background: var(--abrasif-red) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Navigation links */
+.main-menu .navbar-nav .nav-link,
+.js-top-menu .navbar-nav .nav-link,
+.top-menu .navbar-nav .nav-link {
+    color: var(--abrasif-white) !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 15px 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.main-menu .navbar-nav .nav-link:hover,
+.js-top-menu .navbar-nav .nav-link:hover,
+.top-menu .navbar-nav .nav-link:hover {
+    background: rgba(255,255,255,0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Search widget */
+.search-widget input[type="search"],
+.search-widget input[type="text"] {
+    border: 2px solid var(--abrasif-red) !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+}
+
+.search-widget input:focus {
+    border-color: var(--abrasif-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+.search-widget button,
+.search-widget .btn {
+    background: var(--abrasif-red) !important;
+    border-color: var(--abrasif-red) !important;
+    color: var(--abrasif-white) !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+}
+
+.search-widget button:hover,
+.search-widget .btn:hover {
+    background: #c41e3a !important;
+    transform: scale(1.05) !important;
+}
+
+/* Cart and account links */
+.header-nav .cart-preview,
+.header-nav .user-info,
+.header-nav .account {
+    color: var(--abrasif-red) !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.header-nav .cart-preview:hover,
+.header-nav .user-info:hover,
+.header-nav .account:hover {
+    color: var(--abrasif-green) !important;
+    transform: scale(1.1) !important;
+}
+
+/* ========================================
+   PRODUCT CARDS (Clean & Professional)
+======================================== */
+
+/* Product card base */
+.product-miniature {
+    border: 2px solid #e9ecef !important;
+    border-radius: 12px !important;
+    background: var(--abrasif-white) !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+    margin-bottom: 30px !important;
+}
+
+.product-miniature:hover {
+    border-color: var(--abrasif-red) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    transform: translateY(-8px) !important;
+}
+
+/* Product image container */
+.product-miniature .thumbnail-container {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.product-miniature .product-thumbnail img {
+    width: 100% !important;
+    height: 250px !important;
+    object-fit: cover !important;
+    transition: transform 0.3s ease !important;
+}
+
+.product-miniature:hover .product-thumbnail img {
+    transform: scale(1.1) !important;
+}
+
+/* Product information */
+.product-miniature .product-description {
+    padding: 20px !important;
+    background: var(--abrasif-white) !important;
+}
+
+.product-miniature .product-description .h3,
+.product-miniature .product-description h3 {
+    font-weight: 600 !important;
+    color: var(--abrasif-dark) !important;
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+    transition: color 0.3s ease !important;
+}
+
+.product-miniature:hover .product-description .h3,
+.product-miniature:hover .product-description h3 {
+    color: var(--abrasif-red) !important;
+}
+
+/* Product badges */
+.product-miniature .highlighted-informations {
+    position: absolute !important;
+    top: 15px !important;
+    left: 15px !important;
+    z-index: 10 !important;
+}
+
+.product-miniature .highlighted-informations .new,
+.product-miniature .highlighted-informations .badge-new {
+    background: var(--abrasif-green) !important;
+    color: var(--abrasif-white) !important;
+    padding: 5px 12px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.product-miniature .highlighted-informations .on-sale,
+.product-miniature .highlighted-informations .badge-sale {
+    background: var(--abrasif-red) !important;
+    color: var(--abrasif-white) !important;
+    padding: 5px 12px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* ========================================
+   COMPLETE PREVIEW TRACE REMOVAL
+======================================== */
+
+/* Remove ALL quick view elements */
+.quick-view,
+.quickview,
+.js-quick-view-btn,
+.product-quickview,
+.quick-view-btn,
+.modal-quickview,
+.product-modal,
+.product-miniature .quick-view,
+.thumbnail-container .quick-view,
+.product-thumbnail .quick-view,
+.js-product-miniature .quick-view,
+.featured-products .quick-view,
+.product-list .quick-view,
+.products .quick-view,
+.category-products .quick-view,
+.search-results .quick-view,
+.new-products .quick-view,
+.highlighted-informations .quick-view,
+.product-actions .quick-view,
+.product-functional-buttons .quick-view,
+a[data-link-action="quickview"],
+button[data-link-action="quickview"],
+.btn[data-link-action="quickview"],
+[data-toggle="modal"][href*="quickview"],
+[data-target*="quickview"],
+.modal[id*="quickview"],
+.modal-dialog[id*="quickview"],
+.product-cover-modal,
+.js-product-cover-modal,
+.product-images-modal,
+.quick-view-modal,
+.product-quick-view-modal {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Remove quick view icons and hover effects */
+.material-icons:contains("zoom_in"),
+.fa-search-plus,
+.icon-zoom-in,
+.icon-eye,
+.product-miniature:hover::before,
+.product-thumbnail:hover::before,
+.product-miniature:hover::after,
+.product-thumbnail:hover::after {
+    display: none !important;
+}
+
+/* Disable hover effects that might show quick view */
+.product-miniature:hover,
+.product-thumbnail:hover,
+.js-product-miniature:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN (Minimal)
+======================================== */
+
+@media (max-width: 768px) {
+    .header-nav .navbar-brand img {
+        max-height: 45px !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    .product-miniature .product-thumbnail img {
+        height: 200px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-nav .navbar-brand img {
+        max-height: 40px !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .product-miniature {
+        margin-bottom: 20px !important;
+    }
+    
+    .product-miniature .product-thumbnail img {
+        height: 180px !important;
+    }
+    
+    .product-miniature .product-description {
+        padding: 15px !important;
+    }
+}
+
+/* ========================================
+   END - FOCUSED MINIMAL CSS
+   
+   Only handles: Header, Product Cards, Preview Removal
+   Lightweight and conflict-free
+======================================== */ 
