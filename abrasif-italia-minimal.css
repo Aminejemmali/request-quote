@@ -1,0 +1,164 @@
+/**
+ * Abrasif Italia - Minimal Branding CSS
+ * Safe, lightweight styling that won't break your site
+ * 
+ * ONLY applies brand colors and essential styling
+ * Does NOT touch request-quote classes or complex layouts
+ * 
+ * Version: 1.0.0 (Minimal & Safe)
+ */
+
+/* ========================================
+   ABRASIF ITALIA BRAND COLORS
+======================================== */
+
+:root {
+    --abrasif-red: #e31e24;
+    --abrasif-green: #28a745;
+    --abrasif-white: #ffffff;
+    --abrasif-dark: #343a40;
+}
+
+/* ========================================
+   HEADER BRANDING (Safe)
+======================================== */
+
+/* Top header bar - just add red accent */
+.header-top {
+    border-bottom: 3px solid var(--abrasif-red) !important;
+}
+
+/* Main navigation - brand colors */
+.main-menu,
+.js-top-menu,
+.top-menu {
+    background-color: var(--abrasif-red) !important;
+}
+
+.main-menu .navbar-nav .nav-link,
+.js-top-menu .navbar-nav .nav-link,
+.top-menu .navbar-nav .nav-link {
+    color: var(--abrasif-white) !important;
+}
+
+.main-menu .navbar-nav .nav-link:hover,
+.js-top-menu .navbar-nav .nav-link:hover,
+.top-menu .navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ========================================
+   BUTTONS (Safe)
+======================================== */
+
+/* Primary buttons - use brand red */
+.btn-primary {
+    background-color: var(--abrasif-red) !important;
+    border-color: var(--abrasif-red) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #c41e3a !important;
+    border-color: #c41e3a !important;
+}
+
+/* Secondary buttons - use brand green */
+.btn-secondary {
+    background-color: var(--abrasif-green) !important;
+    border-color: var(--abrasif-green) !important;
+    color: var(--abrasif-white) !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: #1e7e34 !important;
+    border-color: #1e7e34 !important;
+    color: var(--abrasif-white) !important;
+}
+
+/* ========================================
+   FOOTER (Safe)
+======================================== */
+
+.footer-container {
+    background-color: var(--abrasif-dark) !important;
+    position: relative;
+}
+
+/* Add red accent line at top of footer */
+.footer-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--abrasif-red), var(--abrasif-green));
+}
+
+.footer-container h3,
+.footer-container .h3 {
+    color: var(--abrasif-red) !important;
+}
+
+/* ========================================
+   PRODUCT ENHANCEMENTS (Minimal)
+======================================== */
+
+/* Product badges - use brand colors */
+.product-miniature .highlighted-informations .new,
+.product-miniature .highlighted-informations .badge-new {
+    background-color: var(--abrasif-green) !important;
+    color: var(--abrasif-white) !important;
+}
+
+.product-miniature .highlighted-informations .on-sale,
+.product-miniature .highlighted-informations .badge-sale {
+    background-color: var(--abrasif-red) !important;
+    color: var(--abrasif-white) !important;
+}
+
+/* ========================================
+   QUICK VIEW REMOVAL (Safe)
+======================================== */
+
+/* Hide all quick view elements */
+.quick-view,
+.quickview,
+.js-quick-view-btn,
+a[data-link-action="quickview"],
+button[data-link-action="quickview"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ========================================
+   FORMS (Minimal)
+======================================== */
+
+/* Form focus states - brand colors */
+.form-control:focus {
+    border-color: var(--abrasif-red) !important;
+    box-shadow: 0 0 0 0.2rem rgba(227, 30, 36, 0.25) !important;
+}
+
+/* ========================================
+   RESPONSIVE (Safe)
+======================================== */
+
+@media (max-width: 768px) {
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 10px 15px !important;
+    }
+}
+
+/* ========================================
+   END - MINIMAL SAFE CSS
+   
+   This CSS only applies essential branding
+   without breaking existing functionality
+======================================== */ 

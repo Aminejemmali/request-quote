@@ -172,6 +172,9 @@ class RequestQuote extends Module
             return '';
         }
 
+        // Load Abrasif Italia branding CSS
+        $this->context->controller->addCSS($this->_path.'abrasif-italia-minimal.css');
+
         $css = '<style>
         /* Hide ALL prices and add to cart across ALL pages */
         .product-price, .current-price, .regular-price, .discount-percentage,
@@ -253,9 +256,9 @@ class RequestQuote extends Module
             box-shadow: none !important;
         }
         
-        /* Quote button styling */
+        /* Quote button styling - Abrasif Italia branding */
         .request-quote-btn {
-            background: #007bff;
+            background: #e31e24;
             color: white;
             border: none;
             padding: 12px 24px;
@@ -263,10 +266,16 @@ class RequestQuote extends Module
             font-size: 16px;
             cursor: pointer;
             margin: 10px 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
         }
         .request-quote-btn:hover {
-            background: #0056b3;
+            background: #c41e3a;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(227, 30, 36, 0.3);
         }
         
         /* Simple modal */
@@ -310,6 +319,16 @@ class RequestQuote extends Module
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .quote-submit:hover {
+            background: #1e7e34;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         }
         </style>';
 
