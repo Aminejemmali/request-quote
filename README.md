@@ -186,7 +186,14 @@ This module is released under the MIT License. See the license file for details.
 
 ## 🔄 Version History
 
-### Version 2.0.0 (Latest)
+### Version 2.0.1 (Latest)
+- **HOTFIX**: Fixed missing hook methods causing "Reset is impossible" error
+- **HOTFIX**: Fixed `hookDisplayProductTab` and `hookDisplayProductTabContent` missing methods
+- Cleaned up duplicate hook implementations
+- Simplified CSS rules for better performance
+- Improved code organization
+
+### Version 2.0.0
 - **MAJOR UPDATE**: Complete module overhaul and bug fixes
 - Fixed request button appearing only in quick preview
 - Fixed modal getting stuck issues

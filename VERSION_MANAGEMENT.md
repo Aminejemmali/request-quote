@@ -115,9 +115,9 @@ Always provide clear migration steps in CHANGELOG.md for breaking changes.
 
 ## 📊 Version Tracking
 
-### Current Version: 2.0.0
+### Current Version: 2.0.1
 ### Release Date: 2024-12-19
-### Next Planned: 2.0.1 (Bug fixes), 2.1.0 (New features)
+### Next Planned: 2.0.2 (Bug fixes), 2.1.0 (New features)
 
 ## 🛠️ Automated Version Updates (Future)
 
