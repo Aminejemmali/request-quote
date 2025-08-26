@@ -72,6 +72,10 @@ class RequestQuote extends Module
             'displayProductActions',           // Hook for product page actions (Classic theme)
             'displayHeader',                   // Hook for header assets
             'displayProductAdditionalInfo',    // Hook to hide price and add to cart
+            'displayProductPriceBlock',        // Hook to hide price blocks
+            'displayAfterProductThumbs',       // Hook for additional product info
+            'displayProductButtons',           // Hook for product buttons
+            'displayProductListFunctionalButtons', // Hook for product list buttons
         ];
 
         foreach ($hooks as $hook) {
@@ -86,6 +90,13 @@ class RequestQuote extends Module
         if (!Configuration::updateValue('REQUESTQUOTE_ENABLED', 1) ||
             !Configuration::updateValue('REQUESTQUOTE_REQUIRE_PHONE', 0)) {
             $this->_errors[] = $this->l('Failed to set default configuration');
+            $this->uninstall();
+            return false;
+        }
+
+        // Create admin tab
+        if (!$this->createAdminTab()) {
+            $this->_errors[] = $this->l('Failed to create admin tab');
             $this->uninstall();
             return false;
         }
@@ -134,11 +145,16 @@ class RequestQuote extends Module
                 $this->_errors[] = $this->l('Failed to drop database table');
             }
 
-            // Remove configuration values
-            if (!Configuration::deleteByName('REQUESTQUOTE_ENABLED') ||
-                !Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE')) {
-                $this->_errors[] = $this->l('Failed to remove configuration values');
-            }
+                    // Remove configuration values
+        if (!Configuration::deleteByName('REQUESTQUOTE_ENABLED') ||
+            !Configuration::deleteByName('REQUESTQUOTE_REQUIRE_PHONE')) {
+            $this->_errors[] = $this->l('Failed to remove configuration values');
+        }
+
+        // Remove admin tab
+        if (!$this->removeAdminTab()) {
+            $this->_errors[] = $this->l('Failed to remove admin tab');
+        }
 
             // Appeler parent::uninstall() en dernier
             return parent::uninstall();
@@ -302,6 +318,89 @@ class RequestQuote extends Module
             return '';
         }
 
+        // CSS global pour masquer les prix sur toutes les pages
+        $globalCss = '<style>
+            /* Masquage global des prix et boutons d\'ajout au panier */
+            .product-add-to-cart,
+            .product-variants,
+            .product-customization,
+            .product-quantity,
+            .product-actions,
+            .product-availability,
+            .product-features,
+            .product-cover,
+            .product-flags,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+        </style>';
+
         // Vérification du contexte pour éviter de charger sur toutes les pages
         if (isset($this->context->controller) && 
             property_exists($this->context->controller, 'controller_type') && 
@@ -403,11 +502,361 @@ class RequestQuote extends Module
                     });
                 </script>';
 
-                return $css . $js;
+                return $globalCss . $css . $js;
             }
         }
 
-        return '';
+        return $globalCss;
+    }
+
+    /**
+     * Hook: displayProductPriceBlock - Hide price blocks
+     */
+    public function hookDisplayProductPriceBlock($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        return '<style>
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
+     * Hook: displayAfterProductThumbs - Hide additional product info
+     */
+    public function hookDisplayAfterProductThumbs($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        return '<style>
+            .product-availability,
+            .product-features,
+            .product-cover,
+            .product-flags,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
+     * Hook: displayProductButtons - Hide product buttons
+     */
+    public function hookDisplayProductButtons($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        return '<style>
+            .product-add-to-cart,
+            .product-variants,
+            .product-customization,
+            .product-quantity,
+            .product-actions,
+            .product-availability,
+            .product-features,
+            .product-cover,
+            .product-flags,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+        </style>';
+    }
+
+    /**
+     * Hook: displayProductListFunctionalButtons - Hide product list buttons
+     */
+    public function hookDisplayProductListFunctionalButtons($params)
+    {
+        if (!Configuration::get('REQUESTQUOTE_ENABLED')) {
+            return '';
+        }
+
+        return '<style>
+            .product-add-to-cart,
+            .product-variants,
+            .product-customization,
+            .product-quantity,
+            .product-actions,
+            .product-availability,
+            .product-features,
+            .product-cover,
+            .product-flags,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+        </style>';
     }
 
     /**
@@ -421,12 +870,164 @@ class RequestQuote extends Module
 
         // CSS pour masquer les éléments de prix et d'ajout au panier
         return '<style>
+            /* Masquage des éléments de prix et d\'ajout au panier */
             .product-add-to-cart,
             .product-variants,
             .product-customization,
             .product-prices,
             .product-quantity,
-            .product-actions {
+            .product-actions,
+            .product-availability,
+            .product-information,
+            .product-features,
+            .product-cover,
+            .product-flags,
+            .product-price,
+            .current-price,
+            .regular-price,
+            .discount-percentage,
+            .product-discounts,
+            .product-pack,
+            .product-customization-container,
+            .product-variants-items,
+            .product-variants-selector,
+            .product-variants-item,
+            .product-variants-item input[type="radio"],
+            .product-variants-item input[type="checkbox"],
+            .product-variants-item select,
+            .product-variants-item .form-control,
+            .product-variants-item .form-select,
+            .product-variants-item .form-check,
+            .product-variants-item .form-check-input,
+            .product-variants-item .form-check-label,
+            .product-variants-item .form-group,
+            .product-variants-item .input-group,
+            .product-variants-item .btn,
+            .product-variants-item .dropdown,
+            .product-variants-item .dropdown-toggle,
+            .product-variants-item .dropdown-menu,
+            .product-variants-item .dropdown-item,
+            .product-variants-item .list-group,
+            .product-variants-item .list-group-item,
+            .product-variants-item .card,
+            .product-variants-item .card-body,
+            .product-variants-item .card-header,
+            .product-variants-item .card-footer,
+            .product-variants-item .table,
+            .product-variants-item .table-responsive,
+            .product-variants-item .alert,
+            .product-variants-item .badge,
+            .product-variants-item .progress,
+            .product-variants-item .spinner-border,
+            .product-variants-item .spinner-grow,
+            .product-variants-item .toast,
+            .product-variants-item .modal,
+            .product-variants-item .popover,
+            .product-variants-item .tooltip,
+            .product-variants-item .carousel,
+            .product-variants-item .accordion,
+            .product-variants-item .collapse,
+            .product-variants-item .tab-content,
+            .product-variants-item .tab-pane,
+            .product-variants-item .nav,
+            .product-variants-item .nav-item,
+            .product-variants-item .nav-link,
+            .product-variants-item .breadcrumb,
+            .product-variants-item .pagination,
+            .product-variants-item .page-item,
+            .product-variants-item .page-link,
+            .product-variants-item .list-unstyled,
+            .product-variants-item .list-inline,
+            .product-variants-item .list-inline-item,
+            .product-variants-item .d-flex,
+            .product-variants-item .d-inline-flex,
+            .product-variants-item .d-block,
+            .product-variants-item .d-inline-block,
+            .product-variants-item .d-none,
+            .product-variants-item .d-sm-none,
+            .product-variants-item .d-md-none,
+            .product-variants-item .d-lg-none,
+            .product-variants-item .d-xl-none,
+            .product-variants-item .d-xxl-none {
+                display: none !important;
+            }
+            
+            /* Masquage spécifique pour les thèmes Classic */
+            .product-information .product-variants,
+            .product-information .product-customization,
+            .product-information .product-pack,
+            .product-information .product-discounts,
+            .product-information .product-availability,
+            .product-information .product-features,
+            .product-information .product-cover,
+            .product-information .product-flags,
+            .product-information .product-price,
+            .product-information .current-price,
+            .product-information .regular-price,
+            .product-information .discount-percentage,
+            .product-information .product-discounts,
+            .product-information .product-pack,
+            .product-information .product-customization-container,
+            .product-information .product-variants-items,
+            .product-information .product-variants-selector,
+            .product-information .product-variants-item,
+            .product-information .product-variants-item input[type="radio"],
+            .product-information .product-variants-item input[type="checkbox"],
+            .product-information .product-variants-item select,
+            .product-information .product-variants-item .form-control,
+            .product-information .product-variants-item .form-select,
+            .product-information .product-variants-item .form-check,
+            .product-information .product-variants-item .form-check-input,
+            .product-information .product-variants-item .form-check-label,
+            .product-information .product-variants-item .form-group,
+            .product-information .product-variants-item .input-group,
+            .product-information .product-variants-item .btn,
+            .product-information .product-variants-item .dropdown,
+            .product-information .product-variants-item .dropdown-toggle,
+            .product-information .product-variants-item .dropdown-menu,
+            .product-information .product-variants-item .dropdown-item,
+            .product-information .product-variants-item .list-group,
+            .product-information .product-variants-item .list-group-item,
+            .product-information .product-variants-item .card,
+            .product-information .product-variants-item .card-body,
+            .product-information .product-variants-item .card-header,
+            .product-information .product-variants-item .card-footer,
+            .product-information .product-table,
+            .product-information .table-responsive,
+            .product-information .alert,
+            .product-information .badge,
+            .product-information .progress,
+            .product-information .spinner-border,
+            .product-information .spinner-grow,
+            .product-information .toast,
+            .product-information .modal,
+            .product-information .popover,
+            .product-information .tooltip,
+            .product-information .carousel,
+            .product-information .accordion,
+            .product-information .collapse,
+            .product-information .tab-content,
+            .product-information .tab-pane,
+            .product-information .nav,
+            .product-information .nav-item,
+            .product-information .nav-link,
+            .product-information .breadcrumb,
+            .product-information .pagination,
+            .product-information .page-item,
+            .product-information .page-link,
+            .product-information .list-unstyled,
+            .product-information .list-inline,
+            .product-information .list-inline-item,
+            .product-information .d-flex,
+            .product-information .d-inline-flex,
+            .product-information .d-block,
+            .product-information .d-inline-block,
+            .product-information .d-none,
+            .product-information .d-sm-none,
+            .product-information .d-md-none,
+            .product-information .d-lg-none,
+            .product-information .d-xl-none,
+            .product-information .d-xxl-none {
                 display: none !important;
             }
         </style>';
@@ -531,5 +1132,52 @@ class RequestQuote extends Module
     public function getErrors()
     {
         return $this->_errors;
+    }
+
+    /**
+     * Create admin tab for managing quote requests
+     */
+    private function createAdminTab()
+    {
+        try {
+            $tab = new Tab();
+            $tab->active = 1;
+            $tab->class_name = 'AdminRequestQuote';
+            $tab->name = array();
+            
+            foreach (Language::getLanguages(true) as $lang) {
+                $tab->name[$lang['id_lang']] = 'Quote Requests';
+            }
+            
+            $tab->id_parent = (int)Tab::getIdFromClassName('AdminParentSell');
+            $tab->module = $this->name;
+            
+            if (!$tab->add()) {
+                return false;
+            }
+            
+            return true;
+        } catch (Exception $e) {
+            $this->_errors[] = $this->l('Admin tab creation error: ') . $e->getMessage();
+            return false;
+        }
+    }
+
+    /**
+     * Remove admin tab for managing quote requests
+     */
+    private function removeAdminTab()
+    {
+        try {
+            $id_tab = (int)Tab::getIdFromClassName('AdminRequestQuote');
+            if ($id_tab) {
+                $tab = new Tab($id_tab);
+                return $tab->delete();
+            }
+            return true;
+        } catch (Exception $e) {
+            $this->_errors[] = $this->l('Admin tab removal error: ') . $e->getMessage();
+            return false;
+        }
     }
 } 
