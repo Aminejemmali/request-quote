@@ -1,44 +1,185 @@
 /**
- * Abrasif Italia - Focused Minimal CSS
- * Only handles: Header, Product Cards, Preview Removal
- * Lightweight and safe - no conflicts
+ * Abrasif Italia - Professional UI CSS
+ * Clean, modern styling for header and product cards
+ * Conflict-free modular approach
  */
 
 /* ========================================
-   ABRASIF ITALIA BRAND COLORS
+   ABRASIF ITALIA BRAND VARIABLES
 ======================================== */
 
 :root {
     --abrasif-red: #e31e24;
     --abrasif-green: #28a745;
     --abrasif-white: #ffffff;
-    --abrasif-dark: #343a40;
+    --abrasif-dark: #2c3e50;
+    --abrasif-gray: #6c757d;
+    --abrasif-light-gray: #f8f9fa;
+    --abrasif-border: #dee2e6;
+    --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-medium: 0 4px 12px rgba(0,0,0,0.15);
+    --shadow-heavy: 0 8px 25px rgba(0,0,0,0.2);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 8px;
 }
 
 /* ========================================
-   HEADER STYLING (Complete)
+   PROFESSIONAL HEADER STYLING
 ======================================== */
 
-/* Top header bar */
+/* Top header bar with contact info */
 .header-top {
-    border-bottom: 3px solid var(--abrasif-red) !important;
     background: var(--abrasif-white) !important;
+    border-bottom: 1px solid var(--abrasif-border) !important;
+    padding: 8px 0 !important;
+    font-size: 13px !important;
 }
 
-/* Main header */
+.header-top .container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.header-top .contact-info {
+    color: var(--abrasif-gray) !important;
+    font-weight: 500 !important;
+}
+
+.header-top .user-info {
+    display: flex !important;
+    gap: 15px !important;
+}
+
+.header-top .user-info a {
+    color: var(--abrasif-red) !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: var(--transition-smooth) !important;
+}
+
+.header-top .user-info a:hover {
+    color: var(--abrasif-green) !important;
+}
+
+/* Main header navigation */
 .header-nav {
     background: var(--abrasif-white) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    box-shadow: var(--shadow-light) !important;
+    padding: 15px 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
 }
 
-/* Logo enhancement */
+.header-nav .container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Logo styling */
+.header-nav .navbar-brand {
+    margin-right: 40px !important;
+}
+
 .header-nav .navbar-brand img {
-    max-height: 60px !important;
-    transition: transform 0.3s ease !important;
+    max-height: 55px !important;
+    width: auto !important;
+    transition: var(--transition-smooth) !important;
 }
 
 .header-nav .navbar-brand:hover img {
-    transform: scale(1.05) !important;
+    transform: scale(1.02) !important;
+}
+
+/* Search widget professional styling */
+.search-widget {
+    flex: 1 !important;
+    max-width: 500px !important;
+    margin: 0 30px !important;
+}
+
+.search-widget .input-group {
+    position: relative !important;
+}
+
+.search-widget input[type="search"],
+.search-widget input[type="text"] {
+    border: 2px solid var(--abrasif-border) !important;
+    border-radius: var(--border-radius) 0 0 var(--border-radius) !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    transition: var(--transition-smooth) !important;
+    background: var(--abrasif-light-gray) !important;
+}
+
+.search-widget input:focus {
+    border-color: var(--abrasif-red) !important;
+    box-shadow: 0 0 0 0.2rem rgba(227, 30, 36, 0.25) !important;
+    outline: none !important;
+    background: var(--abrasif-white) !important;
+}
+
+.search-widget button,
+.search-widget .btn {
+    background: var(--abrasif-red) !important;
+    border: 2px solid var(--abrasif-red) !important;
+    color: var(--abrasif-white) !important;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+    padding: 12px 20px !important;
+    font-weight: 600 !important;
+    transition: var(--transition-smooth) !important;
+}
+
+.search-widget button:hover,
+.search-widget .btn:hover {
+    background: #c41e3a !important;
+    border-color: #c41e3a !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Header actions (cart, account) */
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+.header-nav .cart-preview,
+.header-nav .user-info,
+.header-nav .account {
+    color: var(--abrasif-red) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    padding: 10px 15px !important;
+    border-radius: var(--border-radius) !important;
+    transition: var(--transition-smooth) !important;
+    position: relative !important;
+}
+
+.header-nav .cart-preview:hover,
+.header-nav .user-info:hover,
+.header-nav .account:hover {
+    background: var(--abrasif-light-gray) !important;
+    color: var(--abrasif-green) !important;
+    transform: translateY(-2px) !important;
+}
+
+.header-nav .cart-preview .cart-count {
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+    background: var(--abrasif-green) !important;
+    color: var(--abrasif-white) !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 11px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
 }
 
 /* Main navigation menu */
@@ -46,89 +187,85 @@
 .js-top-menu,
 .top-menu {
     background: var(--abrasif-red) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    box-shadow: var(--shadow-medium) !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Navigation links */
+.main-menu .container,
+.js-top-menu .container,
+.top-menu .container {
+    padding: 0 !important;
+}
+
+/* Navigation links professional styling */
+.main-menu .navbar-nav,
+.js-top-menu .navbar-nav,
+.top-menu .navbar-nav {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
 .main-menu .navbar-nav .nav-link,
 .js-top-menu .navbar-nav .nav-link,
 .top-menu .navbar-nav .nav-link {
     color: var(--abrasif-white) !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
-    padding: 15px 20px !important;
-    transition: all 0.3s ease !important;
+    padding: 18px 25px !important;
+    transition: var(--transition-smooth) !important;
+    border-bottom: 3px solid transparent !important;
+    position: relative !important;
 }
 
 .main-menu .navbar-nav .nav-link:hover,
 .js-top-menu .navbar-nav .nav-link:hover,
 .top-menu .navbar-nav .nav-link:hover {
     background: rgba(255,255,255,0.1) !important;
+    border-bottom-color: var(--abrasif-white) !important;
     transform: translateY(-2px) !important;
 }
 
-/* Search widget */
-.search-widget input[type="search"],
-.search-widget input[type="text"] {
-    border: 2px solid var(--abrasif-red) !important;
-    border-radius: 8px !important;
-    padding: 10px 20px !important;
-}
-
-.search-widget input:focus {
-    border-color: var(--abrasif-green) !important;
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
-}
-
-.search-widget button,
-.search-widget .btn {
-    background: var(--abrasif-red) !important;
-    border-color: var(--abrasif-red) !important;
-    color: var(--abrasif-white) !important;
-    border-radius: 8px !important;
-    padding: 10px 20px !important;
-}
-
-.search-widget button:hover,
-.search-widget .btn:hover {
-    background: #c41e3a !important;
-    transform: scale(1.05) !important;
-}
-
-/* Cart and account links */
-.header-nav .cart-preview,
-.header-nav .user-info,
-.header-nav .account {
-    color: var(--abrasif-red) !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-}
-
-.header-nav .cart-preview:hover,
-.header-nav .user-info:hover,
-.header-nav .account:hover {
-    color: var(--abrasif-green) !important;
-    transform: scale(1.1) !important;
+.main-menu .navbar-nav .nav-link.active,
+.js-top-menu .navbar-nav .nav-link.active,
+.top-menu .navbar-nav .nav-link.active {
+    background: rgba(255,255,255,0.15) !important;
+    border-bottom-color: var(--abrasif-white) !important;
 }
 
 /* ========================================
-   PRODUCT CARDS (Clean & Professional)
+   PROFESSIONAL PRODUCT CARDS
 ======================================== */
 
-/* Product card base */
+/* Product grid container */
+.products,
+.featured-products,
+.product-list,
+.js-product-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 25px !important;
+    padding: 20px 0 !important;
+}
+
+/* Product card professional styling */
 .product-miniature {
-    border: 2px solid #e9ecef !important;
-    border-radius: 12px !important;
     background: var(--abrasif-white) !important;
-    transition: all 0.3s ease !important;
+    border: 1px solid var(--abrasif-border) !important;
+    border-radius: var(--border-radius) !important;
     overflow: hidden !important;
-    margin-bottom: 30px !important;
+    transition: var(--transition-smooth) !important;
+    position: relative !important;
+    height: fit-content !important;
+    margin-bottom: 0 !important;
 }
 
 .product-miniature:hover {
     border-color: var(--abrasif-red) !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    box-shadow: var(--shadow-heavy) !important;
     transform: translateY(-8px) !important;
 }
 
@@ -136,38 +273,79 @@
 .product-miniature .thumbnail-container {
     position: relative !important;
     overflow: hidden !important;
-    border-radius: 10px 10px 0 0 !important;
+    background: var(--abrasif-light-gray) !important;
+    height: 250px !important;
+}
+
+.product-miniature .product-thumbnail {
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .product-miniature .product-thumbnail img {
     width: 100% !important;
-    height: 250px !important;
+    height: 100% !important;
     object-fit: cover !important;
-    transition: transform 0.3s ease !important;
+    transition: var(--transition-smooth) !important;
 }
 
 .product-miniature:hover .product-thumbnail img {
-    transform: scale(1.1) !important;
+    transform: scale(1.05) !important;
 }
 
-/* Product information */
+/* Product information section */
 .product-miniature .product-description {
     padding: 20px !important;
     background: var(--abrasif-white) !important;
+    position: relative !important;
 }
 
+/* Product title styling */
 .product-miniature .product-description .h3,
-.product-miniature .product-description h3 {
+.product-miniature .product-description h3,
+.product-miniature .product-description .product-title {
     font-weight: 600 !important;
     color: var(--abrasif-dark) !important;
-    margin-bottom: 10px !important;
+    margin: 0 0 10px 0 !important;
     font-size: 16px !important;
-    transition: color 0.3s ease !important;
+    line-height: 1.4 !important;
+    transition: var(--transition-smooth) !important;
+    min-height: 44px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
 }
 
 .product-miniature:hover .product-description .h3,
-.product-miniature:hover .product-description h3 {
+.product-miniature:hover .product-description h3,
+.product-miniature:hover .product-description .product-title {
     color: var(--abrasif-red) !important;
+}
+
+/* Product price styling */
+.product-miniature .product-price-and-shipping {
+    margin: 15px 0 !important;
+}
+
+.product-miniature .product-price {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--abrasif-red) !important;
+}
+
+.product-miniature .regular-price {
+    color: var(--abrasif-gray) !important;
+    text-decoration: line-through !important;
+    font-size: 14px !important;
+    margin-right: 8px !important;
+}
+
+.product-miniature .discount-price {
+    color: var(--abrasif-red) !important;
+    font-weight: 700 !important;
 }
 
 /* Product badges */
@@ -176,37 +354,123 @@
     top: 15px !important;
     left: 15px !important;
     z-index: 10 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+}
+
+.product-miniature .product-flags {
+    position: absolute !important;
+    top: 15px !important;
+    left: 15px !important;
+    z-index: 10 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
 }
 
 .product-miniature .highlighted-informations .new,
-.product-miniature .highlighted-informations .badge-new {
+.product-miniature .highlighted-informations .badge-new,
+.product-miniature .product-flag.new {
     background: var(--abrasif-green) !important;
     color: var(--abrasif-white) !important;
-    padding: 5px 12px !important;
+    padding: 6px 12px !important;
     border-radius: 20px !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
+    box-shadow: var(--shadow-light) !important;
 }
 
 .product-miniature .highlighted-informations .on-sale,
-.product-miniature .highlighted-informations .badge-sale {
+.product-miniature .highlighted-informations .badge-sale,
+.product-miniature .product-flag.on-sale,
+.product-miniature .product-flag.discount {
     background: var(--abrasif-red) !important;
     color: var(--abrasif-white) !important;
-    padding: 5px 12px !important;
+    padding: 6px 12px !important;
     border-radius: 20px !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
+    box-shadow: var(--shadow-light) !important;
+}
+
+/* Product actions/buttons */
+.product-miniature .product-actions {
+    padding: 0 20px 20px 20px !important;
+    border-top: 1px solid var(--abrasif-border) !important;
+    margin-top: 15px !important;
+    padding-top: 15px !important;
+}
+
+.product-miniature .add-to-cart-or-refresh {
+    width: 100% !important;
+}
+
+.product-miniature .btn-primary,
+.product-miniature .add-to-cart {
+    background: var(--abrasif-red) !important;
+    border-color: var(--abrasif-red) !important;
+    color: var(--abrasif-white) !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    border-radius: var(--border-radius) !important;
+    transition: var(--transition-smooth) !important;
+    width: 100% !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.product-miniature .btn-primary:hover,
+.product-miniature .add-to-cart:hover {
+    background: #c41e3a !important;
+    border-color: #c41e3a !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-medium) !important;
 }
 
 /* ========================================
-   COMPLETE PREVIEW TRACE REMOVAL
+   SECTION HEADERS PROFESSIONAL STYLING
 ======================================== */
 
-/* Remove ALL quick view elements */
+.products-section-title,
+.category-header,
+.block-title {
+    text-align: center !important;
+    margin: 40px 0 30px 0 !important;
+}
+
+.products-section-title h2,
+.category-header h1,
+.block-title h2 {
+    color: var(--abrasif-dark) !important;
+    font-weight: 700 !important;
+    font-size: 2.5rem !important;
+    margin-bottom: 15px !important;
+    position: relative !important;
+}
+
+.products-section-title h2:after,
+.category-header h1:after,
+.block-title h2:after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -10px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 60px !important;
+    height: 3px !important;
+    background: var(--abrasif-red) !important;
+    border-radius: 2px !important;
+}
+
+/* ========================================
+   COMPLETE QUICK VIEW REMOVAL
+======================================== */
+
 .quick-view,
 .quickview,
 .js-quick-view-btn,
@@ -214,60 +478,67 @@
 .quick-view-btn,
 .modal-quickview,
 .product-modal,
-.product-miniature .quick-view,
-.thumbnail-container .quick-view,
-.product-thumbnail .quick-view,
-.js-product-miniature .quick-view,
-.featured-products .quick-view,
-.product-list .quick-view,
-.products .quick-view,
-.category-products .quick-view,
-.search-results .quick-view,
-.new-products .quick-view,
-.highlighted-informations .quick-view,
-.product-actions .quick-view,
-.product-functional-buttons .quick-view,
+.product-cover-modal,
+.js-product-cover-modal,
+.product-images-modal,
+.quick-view-modal,
+.product-quick-view-modal,
 a[data-link-action="quickview"],
 button[data-link-action="quickview"],
 .btn[data-link-action="quickview"],
 [data-toggle="modal"][href*="quickview"],
 [data-target*="quickview"],
 .modal[id*="quickview"],
-.modal-dialog[id*="quickview"],
-.product-cover-modal,
-.js-product-cover-modal,
-.product-images-modal,
-.quick-view-modal,
-.product-quick-view-modal {
+.modal-dialog[id*="quickview"] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
 }
 
-/* Remove quick view icons and hover effects */
+/* Remove quick view icons */
 .material-icons:contains("zoom_in"),
 .fa-search-plus,
 .icon-zoom-in,
 .icon-eye,
-.product-miniature:hover::before,
-.product-thumbnail:hover::before,
-.product-miniature:hover::after,
-.product-thumbnail:hover::after {
+.fa-eye {
     display: none !important;
 }
 
-/* Disable hover effects that might show quick view */
-.product-miniature:hover,
-.product-thumbnail:hover,
-.js-product-miniature:hover {
-    transform: translateY(-8px) !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+/* ========================================
+   PROFESSIONAL RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 1200px) {
+    .products,
+    .featured-products,
+    .product-list {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+        gap: 20px !important;
+    }
 }
 
-/* ========================================
-   RESPONSIVE DESIGN (Minimal)
-======================================== */
+@media (max-width: 992px) {
+    .header-nav .container {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    
+    .search-widget {
+        max-width: 100% !important;
+        margin: 0 !important;
+        order: 3 !important;
+    }
+    
+    .header-actions {
+        order: 2 !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 15px 20px !important;
+    }
+}
 
 @media (max-width: 768px) {
     .header-nav .navbar-brand img {
@@ -280,28 +551,15 @@ button[data-link-action="quickview"],
         font-size: 14px !important;
     }
     
-    .product-miniature .product-thumbnail img {
+    .products,
+    .featured-products,
+    .product-list {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+        gap: 15px !important;
+    }
+    
+    .product-miniature .thumbnail-container {
         height: 200px !important;
-    }
-}
-
-@media (max-width: 576px) {
-    .header-nav .navbar-brand img {
-        max-height: 40px !important;
-    }
-    
-    .main-menu .navbar-nav .nav-link,
-    .js-top-menu .navbar-nav .nav-link {
-        padding: 10px !important;
-        font-size: 12px !important;
-    }
-    
-    .product-miniature {
-        margin-bottom: 20px !important;
-    }
-    
-    .product-miniature .product-thumbnail img {
-        height: 180px !important;
     }
     
     .product-miniature .product-description {
@@ -309,9 +567,103 @@ button[data-link-action="quickview"],
     }
 }
 
+@media (max-width: 576px) {
+    .header-top {
+        display: none !important;
+    }
+    
+    .header-nav .navbar-brand img {
+        max-height: 40px !important;
+    }
+    
+    .main-menu .navbar-nav,
+    .js-top-menu .navbar-nav {
+        flex-direction: column !important;
+    }
+    
+    .main-menu .navbar-nav .nav-link,
+    .js-top-menu .navbar-nav .nav-link {
+        padding: 15px !important;
+        text-align: center !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        border-right: none !important;
+    }
+    
+    .products,
+    .featured-products,
+    .product-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 20px !important;
+        padding: 15px 0 !important;
+    }
+    
+    .product-miniature .thumbnail-container {
+        height: 220px !important;
+    }
+    
+    .products-section-title h2,
+    .category-header h1,
+    .block-title h2 {
+        font-size: 2rem !important;
+    }
+}
+
 /* ========================================
-   END - FOCUSED MINIMAL CSS
-   
-   Only handles: Header, Product Cards, Preview Removal
-   Lightweight and conflict-free
-======================================== */ 
+   LOADING AND ANIMATION ENHANCEMENTS
+======================================== */
+
+.product-miniature {
+    animation: fadeInUp 0.6s ease-out !important;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-miniature:nth-child(1) { animation-delay: 0.1s !important; }
+.product-miniature:nth-child(2) { animation-delay: 0.2s !important; }
+.product-miniature:nth-child(3) { animation-delay: 0.3s !important; }
+.product-miniature:nth-child(4) { animation-delay: 0.4s !important; }
+
+/* ========================================
+   ACCESSIBILITY IMPROVEMENTS
+======================================== */
+
+.product-miniature:focus,
+.product-miniature .product-thumbnail:focus {
+    outline: 2px solid var(--abrasif-red) !important;
+    outline-offset: 2px !important;
+}
+
+.main-menu .navbar-nav .nav-link:focus,
+.js-top-menu .navbar-nav .nav-link:focus {
+    outline: 2px solid var(--abrasif-white) !important;
+    outline-offset: -2px !important;
+}
+
+/* ========================================
+   MODULE CONFLICT PREVENTION
+======================================== */
+
+/* Ensure RequestQuote module styles don't interfere */
+.request-quote-section .product-miniature,
+.request-quote-modal .product-miniature {
+    all: unset !important;
+}
+
+/* Ensure admin styles don't affect front-end */
+.admin-panel .product-miniature,
+.back-office .product-miniature {
+    all: unset !important;
+}
+
+/* ========================================
+   END PROFESSIONAL CSS
+======================================== */
