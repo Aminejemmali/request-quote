@@ -172,8 +172,7 @@ class RequestQuote extends Module
             return '';
         }
 
-        // Load Abrasif Italia focused CSS (Header, Product Cards, Preview Removal)
-        $this->context->controller->addCSS($this->_path.'abrasif-italia-focused.css');
+  
 
         $css = '<style>
         /* Hide ALL prices and add to cart across ALL pages */
